@@ -1,6 +1,6 @@
 package com.jigsaw.model;
 
-import com.jigsaw.util.ClassLoaderProviderFactory;
+import com.jigsaw.manager.ClassLoaderManagerFactory;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -30,7 +30,7 @@ public class JigsawClassLoader
     }
     catch (ClassNotFoundException e)
     {
-      JigsawClassLoader classLoader = ClassLoaderProviderFactory.getInstance().getClassLoader(className, jigsawPiece);
+      JigsawClassLoader classLoader = ClassLoaderManagerFactory.getInstance().getClassLoader(className, jigsawPiece);
       
       if (classLoader == null) {
         throw new ClassNotFoundException("Unable to find a ClassLoader for class: " + className);

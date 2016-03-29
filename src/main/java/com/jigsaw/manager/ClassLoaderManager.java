@@ -1,13 +1,14 @@
-package com.jigsaw.util;
+package com.jigsaw.manager;
 
 import com.jigsaw.exeption.JigsawAssemblyException;
 import com.jigsaw.model.JigsawClassLoader;
 import com.jigsaw.model.JigsawJar;
 import com.jigsaw.model.JigsawPiece;
+import com.jigsaw.util.JarUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -19,11 +20,11 @@ import java.util.Set;
 
 
 
-public class ClassLoaderProvider
+public class ClassLoaderManager
 {
   private Map<String, Set<JigsawClassLoader>> moduleClasses = new HashMap();
   
-  public ClassLoaderProvider() {}
+  public ClassLoaderManager() {}
   
   public void addClassLoader(JigsawClassLoader classLoader) {
     try { JigsawJar jar = new JigsawJar(new File(classLoader.getJigsawPiece().getUrl().toURI()), true);
