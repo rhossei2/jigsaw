@@ -6,93 +6,115 @@ import com.jigsaw.model.JigsawJar;
 import com.jigsaw.model.JigsawPiece;
 import com.jigsaw.util.JarUtils;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 
+public class ClassLoaderManager {
 
+    private Map<String, Set<JigsawClassLoader>> moduleClasses = new HashMap();
 
+    public JigsawClassLoader addClassLoader(JigsawPiece jigsawPiece, ClassLoader parentClassLoader) {
+        JigsawJar jar = null;
+        try {
+            JigsawClassLoader classLoader = new JigsawClassLoader(jigsawPiece, parentClassLoader);
 
+            jar = new JigsawJar(classLoader.getJigsawPiece().getFile(), true);
+            for (String packageName : jar.getPackageNames()) {
+                addResource(packageName, classLoader);
+            }
 
+            for (String resourceName : jar.getResourceNames()) {
+                addResource(resourceName, classLoader);
+            }
 
-public class ClassLoaderManager
-{
-  private Map<String, Set<JigsawClassLoader>> moduleClasses = new HashMap();
-  
-  public ClassLoaderManager() {}
-  
-  public void addClassLoader(JigsawClassLoader classLoader) {
-    try { JigsawJar jar = new JigsawJar(new File(classLoader.getJigsawPiece().getUrl().toURI()), true);
-      for (String packageName : jar.getPackageNames()) {
-        addResource(packageName, classLoader);
-      }
-      
-      for (String resourceName : jar.getResourceNames()) {
-        addResource(resourceName, classLoader);
-      }
-      
-      jar.close();
+            return classLoader;
+
+        } catch (IOException e) {
+            throw new JigsawAssemblyException("Unable to scan resources in " + jigsawPiece.getId(), e);
+        } finally {
+            if(jar != null){
+                try {
+                    jar.close();
+
+                } catch (IOException e) {
+                    throw new JigsawAssemblyException("Unable to close jar", e);
+                }
+            }
+        }
     }
-    catch (IOException e) {
-      throw new JigsawAssemblyException("Unable to scan resources in " + classLoader.getJigsawPiece().getId(), e);
+
+    public void unregisterClassLoader(JigsawClassLoader classLoader) {
+        JigsawJar jar= null;
+        try {
+            jar = new JigsawJar(classLoader.getJigsawPiece().getFile(), true);
+
+            for (String packageName : jar.getPackageNames()) {
+                removeResource(packageName, classLoader);
+            }
+
+            for (String resourceName : jar.getResourceNames()) {
+                removeResource(resourceName, classLoader);
+            }
+
+            classLoader.close();
+
+        } catch (IOException e) {
+            throw new JigsawAssemblyException("Unable to scan resources in " + classLoader.getJigsawPiece().getId(), e);
+        } finally {
+            if(jar != null){
+                try {
+                    jar.close();
+
+                } catch (IOException e) {
+                    throw new JigsawAssemblyException("Unable to close jar", e);
+                }
+            }
+        }
     }
-    catch (URISyntaxException e) {
-      throw new JigsawAssemblyException("Unable to scan resources in " + classLoader.getJigsawPiece().getId(), e);
+
+    public JigsawClassLoader getClassLoader(String className, String requestingJigsawPieceId) {
+        String packageName = JarUtils.getPackageName(className);
+
+        Set<JigsawClassLoader> classLoaders = moduleClasses.get(packageName);
+        if (classLoaders == null) {
+            return null;
+        }
+
+        for (JigsawClassLoader classLoader : classLoaders) {
+            Set<String> dependants = classLoader.getJigsawPiece().getDependants();
+            if (dependants.contains(requestingJigsawPieceId)) {
+                return classLoader;
+            }
+        }
+
+        return null;
     }
-    
-    Package[] packages = classLoader.getPackages();
-    for (Package pack : packages) {
-      Set<JigsawClassLoader> classLoaders = (Set)moduleClasses.get(pack.getName());
-      if (classLoaders == null) {
-        classLoaders = new HashSet();
-      }
-      
-      classLoaders.add(classLoader);
-      
-      moduleClasses.put(pack.getName(), classLoaders);
+
+    protected void addResource(String resourceName, JigsawClassLoader classLoader) {
+        Set<JigsawClassLoader> classLoaders = moduleClasses.get(resourceName);
+        if (classLoaders == null) {
+            classLoaders = new HashSet<JigsawClassLoader>();
+        }
+
+        classLoaders.add(classLoader);
+
+        moduleClasses.put(resourceName, classLoaders);
     }
-  }
-  
-  public JigsawClassLoader getClassLoader(String className, JigsawPiece requestingJigsawPiece) {
-    String packageName = JarUtils.getPackageName(className);
-    
-    Set<JigsawClassLoader> classLoaders = (Set)moduleClasses.get(packageName);
-    if (classLoaders == null) {
-      return null;
+
+    protected void removeResource(String resourceName, JigsawClassLoader classLoader) {
+        Set<JigsawClassLoader> classLoaders = moduleClasses.get(resourceName);
+        if (classLoaders == null) {
+            return;
+        }
+
+        classLoaders.remove(classLoader);
+
+        if(classLoaders.isEmpty()) {
+            moduleClasses.remove(resourceName);
+        }
     }
-    
-    for (JigsawClassLoader classLoader : classLoaders) {
-      Set<String> dependants = classLoader.getJigsawPiece().getDependants();
-      if (dependants.contains(requestingJigsawPiece.getId())) {
-        return classLoader;
-      }
-    }
-    
-    return null;
-  }
-  
-  public void removeClassLoader(JigsawPiece piece) {
-    for (Package p : piece.getClassLoader().getPackages()) {
-      Set<JigsawClassLoader> classLoaders = (Set)moduleClasses.get(p.getName());
-      if (classLoaders != null) {
-        classLoaders.remove(piece);
-      }
-    }
-  }
-  
-  protected void addResource(String resourceName, JigsawClassLoader classLoader) {
-    Set<JigsawClassLoader> classLoaders = (Set)moduleClasses.get(resourceName);
-    if (classLoaders == null) {
-      classLoaders = new HashSet();
-    }
-    
-    classLoaders.add(classLoader);
-    
-    moduleClasses.put(resourceName, classLoaders);
-  }
 }

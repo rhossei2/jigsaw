@@ -6,8 +6,10 @@ import com.jigsaw.exeption.JigsawDisconnectException;
 import com.jigsaw.model.JigsawClassLoader;
 import com.jigsaw.model.JigsawPiece;
 import com.jigsaw.model.SimpleJigsawPiece;
+import com.jigsaw.util.JarUtils;
 import com.jigsaw.util.ResourceLoader;
 import com.jigsaw.util.ResourceLoaderFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
@@ -31,252 +33,259 @@ import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.util.*;
 
 public class JigsawPieceManager {
-  public JigsawPieceManager() {}
 
-  private static final Logger log = LoggerFactory.getLogger(JigsawPieceManager.class);
+    private static final Logger log = LoggerFactory.getLogger(JigsawPieceManager.class);
 
-  private String localRepository = "C:\\projects\\out";
+    private String localRepository = "C:\\projects\\out";
 
-  private ResourceLoader resourceLoader = ResourceLoaderFactory.getInstance();
+    private ResourceLoader resourceLoader = ResourceLoaderFactory.getInstance();
 
-  private ClassLoaderManager classLoaderManager = ClassLoaderManagerFactory.getInstance();
+    private Map<String, JigsawPiece> pieces = new LinkedHashMap<String, JigsawPiece>();
 
-  private Map<String, JigsawPiece> pieces = new LinkedHashMap();
+    private ClassLoaderManager classLoaderManager = ClassLoaderManagerFactory.getInstance();
 
-  public boolean hasPiece(String pieceId) {
-    return pieces.containsKey(pieceId);
-  }
-
-  public JigsawPiece getPiece(String pieceId) {
-    return (JigsawPiece)pieces.get(pieceId);
-  }
-
-  public Collection<JigsawPiece> getPieces() {
-    return pieces.values();
-  }
-
-  /**
-   * - First, all dependencies are connected if not already connected <br/>
-   * - Lastly, the piece is connected if not already connected
-   * @param jigsawPiece the piece being connected
-   * @return list of all connected pieces
-   * @throws JigsawConnectException
-   */
-  public Set<JigsawPiece> connect(JigsawPiece jigsawPiece) throws JigsawConnectException {
-    Set<JigsawPiece> connectedPieces = new HashSet();
-
-    if (jigsawPiece.getStatus() == SimpleJigsawPiece.Status.CONNECTED) {
-      return connectedPieces;
+    public boolean hasPiece(String pieceId) {
+        return pieces.containsKey(pieceId);
     }
 
-    connectInternal(jigsawPiece, connectedPieces);
+    public JigsawPiece getPiece(String pieceId) {
+        return pieces.get(pieceId);
+    }
 
-    return connectedPieces;
-  }
+    public Collection<JigsawPiece> getPieces() {
+        return pieces.values();
+    }
 
-  protected void connectInternal(JigsawPiece jigsawPiece, Set<JigsawPiece> connectedPieces)
-          throws JigsawConnectException {
-    try {
-      for (String dependencyId : jigsawPiece.getDependencies()) {
-        connectInternal(getPiece(dependencyId), connectedPieces);
-      }
+    /**
+     * - First, all dependencies are connected if not already connected <br/>
+     * - Lastly, the piece is connected if not already connected
+     *
+     * @param jigsawPiece the piece being connected
+     * @return list of all connected pieces
+     * @throws JigsawConnectException
+     */
+    public Set<JigsawPiece> connectPiece(JigsawPiece jigsawPiece) throws JigsawConnectException {
+        Set<JigsawPiece> connectedPieces = new HashSet();
 
-      if (jigsawPiece.getStatus() != SimpleJigsawPiece.Status.CONNECTED) {
-        jigsawPiece.setStatus(SimpleJigsawPiece.Status.CONNECTED);
-
-        resourceLoader.loadResources(jigsawPiece);
-
-        if (jigsawPiece.getConnector() != null) {
-          jigsawPiece.getConnector().connect(jigsawPiece);
+        if (jigsawPiece.getStatus() == SimpleJigsawPiece.Status.CONNECTED) {
+            return connectedPieces;
         }
 
-        connectedPieces.add(jigsawPiece);
-      }
-    }
-    catch (Exception e) {
-      throw new JigsawConnectException("Unable to connect the jigsaw piece", e);
-    }
-  }
+        connectInternal(jigsawPiece, connectedPieces);
 
-  /**
-   * Disconnects a given piece plus all dependencies that have no more
-   * dependents. <br/>
-   * @param jigsawPiece the piece to disconnect
-   * @return all the pieces that have been disconnected
-   * @throws JigsawDisconnectException pieces that still have dependants
-   * cannot be disconnected
-   */
-  public Set<JigsawPiece> disconnect(JigsawPiece jigsawPiece) throws JigsawDisconnectException {
-    if (!jigsawPiece.getDependants().isEmpty()) {
-      throw new JigsawDisconnectException("Cannot disconnect piece with dependant pieces");
+        return connectedPieces;
     }
 
-    Set<JigsawPiece> disconnectedPieces = new HashSet();
+    protected void connectInternal(JigsawPiece jigsawPiece, Set<JigsawPiece> connectedPieces)
+            throws JigsawConnectException {
+        try {
+            for (String dependencyId : jigsawPiece.getDependencies()) {
+                connectInternal(getPiece(dependencyId), connectedPieces);
+            }
 
-    if (jigsawPiece.getStatus() == SimpleJigsawPiece.Status.DISCONNECTED) {
-      return disconnectedPieces;
+            if (jigsawPiece.getStatus() != SimpleJigsawPiece.Status.CONNECTED) {
+                jigsawPiece.setStatus(SimpleJigsawPiece.Status.CONNECTED);
+
+                resourceLoader.loadResources(jigsawPiece);
+
+                if (jigsawPiece.getConnector() != null) {
+                    jigsawPiece.getConnector().connect(jigsawPiece);
+                }
+
+                connectedPieces.add(jigsawPiece);
+            }
+        } catch (Exception e) {
+            throw new JigsawConnectException("Unable to connect the jigsaw piece", e);
+        }
     }
 
-    disconnectInternal(jigsawPiece, disconnectedPieces);
-
-    return disconnectedPieces;
-  }
-
-  protected void disconnectInternal(JigsawPiece jigsawPiece, Set<JigsawPiece> disconnectedPieces) {
-    try {
-      for (String dependencyId : jigsawPiece.getDependencies()) {
-        JigsawPiece dependency = getPiece(dependencyId);
-
-        dependency.getDependants().remove(jigsawPiece.getId());
-        if (dependency.getDependants().isEmpty()) {
-          disconnectInternal(dependency, disconnectedPieces);
+    /**
+     * Disconnects a given piece plus all dependencies that have no more
+     * dependents. <br/>
+     *
+     * @param jigsawPiece the piece to disconnect
+     * @return all the pieces that have been disconnected
+     * @throws JigsawDisconnectException pieces that still have dependants
+     *                                   cannot be disconnected
+     */
+    public Set<JigsawPiece> disconnectPiece(JigsawPiece jigsawPiece) throws JigsawDisconnectException {
+        if (!jigsawPiece.getDependants().isEmpty()) {
+            throw new JigsawDisconnectException("Cannot disconnect piece with dependant pieces");
         }
 
-        disconnectInternal(dependency, disconnectedPieces);
-      }
+        Set<JigsawPiece> disconnectedPieces = new HashSet();
 
-      if (jigsawPiece.getStatus() == SimpleJigsawPiece.Status.CONNECTED) {
-        jigsawPiece.setStatus(SimpleJigsawPiece.Status.DISCONNECTED);
-
-        resourceLoader.loadResources(jigsawPiece);
-
-        if (jigsawPiece.getConnector() != null) {
-          jigsawPiece.getConnector().disconnect(jigsawPiece);
+        if (jigsawPiece.getStatus() == SimpleJigsawPiece.Status.DISCONNECTED) {
+            return disconnectedPieces;
         }
-      }
 
-      disconnectedPieces.add(jigsawPiece);
-    }
-    catch (Exception e) {
-      throw new JigsawConnectException("Unable to connect the jigsaw piece", e);
-    }
-  }
+        disconnectInternal(jigsawPiece, disconnectedPieces);
 
-  /**
-   * Removes a given piece plus all dependencies that have no more
-   * dependents. <br/>
-   * @param jigsawPiece the piece to remove
-   * @return all the pieces that have been removed
-   * @throws JigsawDisconnectException pieces that still have dependants
-   * cannot be removed
-   */
-  public Set<JigsawPiece> removePiece(JigsawPiece jigsawPiece) {
-    Set<JigsawPiece> disconnectedPieces = disconnect(jigsawPiece);
-    for (JigsawPiece disconnectedPiece : disconnectedPieces) {
-      pieces.remove(disconnectedPiece.getId());
-
-      classLoaderManager.removeClassLoader(disconnectedPiece);
+        return disconnectedPieces;
     }
 
-    return disconnectedPieces;
-  }
+    protected void disconnectInternal(JigsawPiece jigsawPiece, Set<JigsawPiece> disconnectedPieces) {
+        try {
+            if (jigsawPiece.getStatus() == SimpleJigsawPiece.Status.CONNECTED) {
+                jigsawPiece.setStatus(SimpleJigsawPiece.Status.DISCONNECTED);
 
-  public JigsawPiece addPiece(String groupId, String artifactId, String version) {
-    try {
-      RepositorySystem repoSystem = newRepositorySystem();
+                resourceLoader.loadResources(jigsawPiece);
 
-      RepositorySystemSession session = newSession(repoSystem);
+                if (jigsawPiece.getConnector() != null) {
+                    jigsawPiece.getConnector().disconnect(jigsawPiece);
+                }
+            }
 
-      Dependency dependency = new Dependency(new org.eclipse.aether.artifact.DefaultArtifact(groupId, artifactId, "jar", version), "compile");
+            disconnectedPieces.add(jigsawPiece);
 
-      RemoteRepository central = new RemoteRepository.Builder("central", "default", "http://repo1.maven.org/maven2/").build();
+            for (String dependencyId : jigsawPiece.getDependencies()) {
+                JigsawPiece dependency = getPiece(dependencyId);
 
+                dependency.getDependants().remove(jigsawPiece.getId());
+                if (dependency.getDependants().isEmpty()) {
+                    disconnectInternal(dependency, disconnectedPieces);
+                }
 
-      CollectRequest collectRequest = new CollectRequest();
-      collectRequest.setRoot(dependency);
-      collectRequest.addRepository(central);
-      DependencyNode node = repoSystem.collectDependencies(session, collectRequest).getRoot();
+                disconnectInternal(dependency, disconnectedPieces);
+            }
 
-      DependencyRequest dependencyRequest = new DependencyRequest();
-      dependencyRequest.setRoot(node);
-      dependencyRequest.setFilter(new ScopeDependencyFilter(new String[] { "provided", "test" }));
-
-      DependencyResult dependencyResult = repoSystem.resolveDependencies(session, dependencyRequest);
-
-      return addPiece(null, dependencyResult.getRoot());
-    }
-    catch (DependencyCollectionException e) {
-      throw new JigsawAssemblyException("Unable to add a new JigsawPiece", e);
-    }
-    catch (DependencyResolutionException e) {
-      throw new JigsawAssemblyException("Unable to add a new JigsawPiece", e);
-    }
-  }
-
-  protected JigsawPiece addPiece(String dependantId, DependencyNode root) {
-    String rootId = generateId(root.getArtifact().getGroupId(), root.getArtifact().getArtifactId(), root.getArtifact().getVersion());
-
-
-    JigsawPiece jigsawPiece = getPiece(rootId);
-    if (jigsawPiece == null) {
-      jigsawPiece = convert(root.getArtifact());
-
-      JigsawClassLoader classLoader = new JigsawClassLoader(jigsawPiece, getClass().getClassLoader());
-
-
-      classLoaderManager.addClassLoader(classLoader);
-
-      jigsawPiece.setClassLoader(classLoader);
-
-      pieces.put(rootId, jigsawPiece);
+        } catch (Exception e) {
+            throw new JigsawConnectException("Unable to connect the jigsaw piece", e);
+        }
     }
 
-    if (org.apache.commons.lang3.StringUtils.isNotEmpty(dependantId)) {
-      jigsawPiece.getDependants().add(dependantId);
+    /**
+     * Removes a given piece plus all dependencies that have no more
+     * dependents. <br/>
+     *
+     * @param jigsawPiece the piece to remove
+     * @return all the pieces that have been removed
+     * @throws JigsawDisconnectException pieces that still have dependants
+     *                                   cannot be removed
+     */
+    public Set<JigsawPiece> removePiece(JigsawPiece jigsawPiece) {
+        Set<JigsawPiece> disconnectedPieces = disconnectPiece(jigsawPiece);
+        for (JigsawPiece disconnectedPiece : disconnectedPieces) {
+            classLoaderManager.unregisterClassLoader(disconnectedPiece.getClassLoader());
+
+            pieces.remove(disconnectedPiece.getId());
+        }
+
+        return disconnectedPieces;
     }
 
-    for (DependencyNode dependencyNode : root.getChildren()) {
-      JigsawPiece dependency = addPiece(rootId, dependencyNode);
+    public JigsawPiece addPiece(String groupId, String artifactId, String version) {
+        try {
+            RepositorySystem repoSystem = newRepositorySystem();
 
-      jigsawPiece.getDependencies().add(dependency.getId());
+            RepositorySystemSession session = newSession(repoSystem);
+
+            Dependency dependency = new Dependency(new org.eclipse.aether.artifact.DefaultArtifact(groupId, artifactId, "jar", version), "compile");
+
+            RemoteRepository central = new RemoteRepository.Builder("central", "default", "http://repo1.maven.org/maven2/").build();
+
+
+            CollectRequest collectRequest = new CollectRequest();
+            collectRequest.setRoot(dependency);
+            collectRequest.addRepository(central);
+            DependencyNode node = repoSystem.collectDependencies(session, collectRequest).getRoot();
+
+            DependencyRequest dependencyRequest = new DependencyRequest();
+            dependencyRequest.setRoot(node);
+            dependencyRequest.setFilter(new ScopeDependencyFilter(new String[]{"provided", "test"}));
+
+            DependencyResult dependencyResult = repoSystem.resolveDependencies(session, dependencyRequest);
+
+            return addPiece(null, dependencyResult.getRoot());
+
+        } catch (DependencyCollectionException e) {
+            throw new JigsawAssemblyException("Unable to add a new JigsawPiece", e);
+        } catch (DependencyResolutionException e) {
+            throw new JigsawAssemblyException("Unable to add a new JigsawPiece", e);
+        }
     }
 
-    return jigsawPiece;
-  }
+    protected JigsawPiece addPiece(String dependantId, DependencyNode root) {
+        String rootId = generateId(root.getArtifact());
+        if(hasPiece(rootId)) {
+            return getPiece(rootId);
+        }
 
-  private RepositorySystem newRepositorySystem() {
-    DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
-    locator.addService(org.eclipse.aether.spi.connector.RepositoryConnectorFactory.class, BasicRepositoryConnectorFactory.class);
-    locator.addService(TransporterFactory.class, FileTransporterFactory.class);
-    locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
+        JigsawPiece jigsawPiece = convert(root.getArtifact());
 
-    return locator.getService(RepositorySystem.class);
-  }
+        JigsawClassLoader classLoader = classLoaderManager
+                .addClassLoader(jigsawPiece, getClass().getClassLoader());
 
-  private RepositorySystemSession newSession(RepositorySystem system) {
-    DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+        jigsawPiece.setClassLoader(classLoader);
 
-    LocalRepository localRepo = new LocalRepository(localRepository);
-    session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
+        pieces.put(rootId, jigsawPiece);
 
-    return session;
-  }
+        if (StringUtils.isNotEmpty(dependantId)) {
+            jigsawPiece.getDependants().add(dependantId);
+        }
 
-  protected JigsawPiece convert(Artifact artifact) {
-    JigsawPiece jigsawPiece = new JigsawPiece();
-    jigsawPiece.setId(generateId(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion()));
-    jigsawPiece.setArtifactId(artifact.getArtifactId());
-    jigsawPiece.setGroupId(artifact.getGroupId());
-    jigsawPiece.setVersion(artifact.getVersion());
-    try {
-      jigsawPiece.setUrl(artifact.getFile().toURI().toURL());
-    } catch (MalformedURLException e) {
-      e.printStackTrace();
+        for (DependencyNode dependencyNode : root.getChildren()) {
+            JigsawPiece dependency = addPiece(rootId, dependencyNode);
+
+            jigsawPiece.getDependencies().add(dependency.getId());
+        }
+
+        return jigsawPiece;
     }
 
-    return jigsawPiece;
-  }
+    private RepositorySystem newRepositorySystem() {
+        DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
+        locator.addService(org.eclipse.aether.spi.connector.RepositoryConnectorFactory.class,
+                BasicRepositoryConnectorFactory.class);
+        locator.addService(TransporterFactory.class, FileTransporterFactory.class);
+        locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
 
-  protected String generateId(String groupId, String artifactId, String version) {
-    return groupId + ":" + artifactId + ":" + version;
-  }
+        return locator.getService(RepositorySystem.class);
+    }
 
-  public void setLocalRepository(String localRepository)
-  {
-    this.localRepository = localRepository;
-  }
+    private RepositorySystemSession newSession(RepositorySystem system) {
+        DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+
+        LocalRepository localRepo = new LocalRepository(localRepository);
+        session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
+
+        return session;
+    }
+
+    protected JigsawPiece convert(Artifact artifact) {
+        JigsawPiece jigsawPiece = new JigsawPiece();
+        jigsawPiece.setId(generateId(artifact));
+        jigsawPiece.setArtifactId(artifact.getArtifactId());
+        jigsawPiece.setGroupId(artifact.getGroupId());
+        jigsawPiece.setVersion(artifact.getVersion());
+        jigsawPiece.setFile(artifact.getFile());
+
+        return jigsawPiece;
+    }
+
+    protected String generateId(Artifact artifact) {
+        try {
+            StringBuffer sb = new StringBuffer()
+                    .append(artifact.getGroupId())
+                    .append(":")
+                    .append(artifact.getArtifactId())
+                    .append(":")
+                    .append(artifact.getVersion())
+                    .append(":")
+                    .append(JarUtils.getChecksum(artifact.getFile()));
+
+            return sb.toString();
+
+        } catch (IOException e) {
+            throw new JigsawAssemblyException("Unable to generate an id for the artifact", e);
+        }
+    }
+
+    public void setLocalRepository(String localRepository) {
+        this.localRepository = localRepository;
+    }
 }
