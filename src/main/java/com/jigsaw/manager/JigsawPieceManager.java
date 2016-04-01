@@ -62,14 +62,14 @@ public class JigsawPieceManager {
 
     /**
      * - First, all dependencies are connected if not already connected <br/>
-     * - Lastly, the piece is connected if not already connected
+     * - Lastly, the piece itself is connected if not already connected
      *
      * @param jigsawPiece the piece being connected
      * @return list of all connected pieces
      * @throws JigsawConnectException
      */
     public Set<JigsawPiece> connectPiece(JigsawPiece jigsawPiece) throws JigsawConnectException {
-        Set<JigsawPiece> connectedPieces = new HashSet();
+        Set<JigsawPiece> connectedPieces = new HashSet<JigsawPiece>();
 
         if (jigsawPiece.getStatus() == SimpleJigsawPiece.Status.CONNECTED) {
             return connectedPieces;
@@ -117,7 +117,7 @@ public class JigsawPieceManager {
             throw new JigsawDisconnectException("Cannot disconnect piece with dependant pieces");
         }
 
-        Set<JigsawPiece> disconnectedPieces = new HashSet();
+        Set<JigsawPiece> disconnectedPieces = new HashSet<JigsawPiece>();
 
         if (jigsawPiece.getStatus() == SimpleJigsawPiece.Status.DISCONNECTED) {
             return disconnectedPieces;
@@ -170,7 +170,7 @@ public class JigsawPieceManager {
     public Set<JigsawPiece> removePiece(JigsawPiece jigsawPiece) {
         Set<JigsawPiece> disconnectedPieces = disconnectPiece(jigsawPiece);
         for (JigsawPiece disconnectedPiece : disconnectedPieces) {
-            classLoaderManager.unregisterClassLoader(disconnectedPiece.getClassLoader());
+            classLoaderManager.removeClassLoader(disconnectedPiece.getClassLoader());
 
             pieces.remove(disconnectedPiece.getId());
         }
@@ -178,6 +178,35 @@ public class JigsawPieceManager {
         return disconnectedPieces;
     }
 
+    /**
+     * - First, the old piece is removed <br/>
+     * - Second, the new piece and its new dependencies are added <br/>
+     *
+     * @param pieceId    the old piece id to replace
+     * @param groupId    new group id
+     * @param artifactId new artifact id
+     * @param version    new version
+     * @return the new piece
+     */
+    public JigsawPiece replacePiece(String pieceId, String groupId, String artifactId, String version) {
+        JigsawPiece oldPiece = getPiece(pieceId);
+        if (oldPiece != null) {
+            removePiece(oldPiece);
+        }
+
+        return addPiece(groupId, artifactId, version);
+    }
+
+    /**
+     * - First, the piece is fetched from either a local or remote repository <br/>
+     * - Second, the piece and all of its dependencies are added to the system.
+     * If any of the pieces being added already exist, they won't be added. <br/>
+     *
+     * @param groupId    group id
+     * @param artifactId artifact id
+     * @param version    version
+     * @return the added piece
+     */
     public JigsawPiece addPiece(String groupId, String artifactId, String version) {
         try {
             RepositorySystem repoSystem = newRepositorySystem();
@@ -211,7 +240,7 @@ public class JigsawPieceManager {
 
     protected JigsawPiece addPiece(String dependantId, DependencyNode root) {
         String rootId = generateId(root.getArtifact());
-        if(hasPiece(rootId)) {
+        if (hasPiece(rootId)) {
             return getPiece(rootId);
         }
 
@@ -287,5 +316,9 @@ public class JigsawPieceManager {
 
     public void setLocalRepository(String localRepository) {
         this.localRepository = localRepository;
+    }
+
+    public ClassLoaderManager getClassLoaderManager() {
+        return classLoaderManager;
     }
 }

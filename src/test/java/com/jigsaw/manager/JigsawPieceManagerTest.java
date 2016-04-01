@@ -3,6 +3,7 @@ package com.jigsaw.manager;
 import com.jigsaw.model.JigsawPiece;
 import com.jigsaw.model.SimpleJigsawPiece;
 import com.jigsaw.util.JarUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +31,11 @@ public class JigsawPieceManagerTest {
 
         testDependencyChecksum = JarUtils.getChecksum(new File(this.getClass().getResource("/com/jigsaw/jigsaw-test-dependency/1.0.0-SNAPSHOT/jigsaw-test-dependency-1.0.0-SNAPSHOT.jar").getFile()));
         testDependencyId = "com.jigsaw:jigsaw-test-dependency:1.0.0-SNAPSHOT:" + testDependencyChecksum;
+    }
+
+    @After
+    public void after() throws Exception {
+        ClassLoaderManagerFactory.setInstance(null);
     }
 
     @Test
@@ -88,12 +94,30 @@ public class JigsawPieceManagerTest {
         pieceManager.setLocalRepository(this.getClass().getResource("/").getFile());
 
         JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT");
-        JigsawPiece dependency = pieceManager.getPiece(testDependencyId);
+
+        pieceManager.connectPiece(piece);
+        pieceManager.removePiece(piece);
+
+        Assert.assertTrue(pieceManager.getPieces().isEmpty());
+    }
+
+    @Test
+    public void testReplacePiece() throws Exception {
+        JigsawPieceManager pieceManager = new JigsawPieceManager();
+        pieceManager.setLocalRepository(this.getClass().getResource("/").getFile());
+
+        JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT");
 
         pieceManager.connectPiece(piece);
 
-        Set<JigsawPiece> pieces = pieceManager.removePiece(piece);
+        piece = pieceManager.replacePiece(piece.getId(), "com.jigsaw", "jigsaw-test", "1.0.1-SNAPSHOT");
 
-        Assert.assertTrue(pieceManager.getPieces().isEmpty());
+        pieceManager.connectPiece(piece);
+
+        String testChecksum = JarUtils.getChecksum(new File(this.getClass().getResource("/com/jigsaw/jigsaw-test/1.0.1-SNAPSHOT/jigsaw-test-1.0.1-SNAPSHOT.jar").getFile()));
+        String testId = "com.jigsaw:jigsaw-test:1.0.1-SNAPSHOT:" + testChecksum;
+
+        Assert.assertEquals(testId, piece.getId());
+        Assert.assertEquals(SimpleJigsawPiece.Status.CONNECTED, piece.getStatus());
     }
 }

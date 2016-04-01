@@ -47,7 +47,7 @@ public class ClassLoaderManager {
         }
     }
 
-    public void unregisterClassLoader(JigsawClassLoader classLoader) {
+    public void removeClassLoader(JigsawClassLoader classLoader) {
         JigsawJar jar= null;
         try {
             jar = new JigsawJar(classLoader.getJigsawPiece().getFile(), true);
