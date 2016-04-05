@@ -1,9 +1,9 @@
 package com.jigsaw.manager;
 
-import com.core.util.JigsawClassLoader;
-import com.commons.model.JigsawPiece;
-import com.core.manager.JigsawPieceManager;
-import com.core.util.JarUtils;
+import com.jigsaw.core.util.JigsawClassLoader;
+import com.jigsaw.commons.model.JigsawPiece;
+import com.jigsaw.core.manager.JigsawPieceManager;
+import com.jigsaw.core.util.JarUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,13 +48,13 @@ public class ClassLoaderManagerTest {
     public void testAddClassLoader() throws Exception {
         JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT");
 
-        JigsawClassLoader classLoader = pieceManager.getClassLoaderManager()
+        JigsawClassLoader classLoader = (JigsawClassLoader) pieceManager.getClassLoaderManager()
                 .getClassLoader("com.jigsawtestdependency.Printer", piece.getId());
 
         Assert.assertNotNull(classLoader);
         Assert.assertEquals(testDependencyId, classLoader.getJigsawPiece().getId());
 
-        classLoader = pieceManager.getClassLoaderManager()
+        classLoader = (JigsawClassLoader) pieceManager.getClassLoaderManager()
                 .getClassLoader("com.jigsawtestdependency.Printer", "invalidId");
 
         Assert.assertNull(classLoader);
@@ -68,7 +68,7 @@ public class ClassLoaderManagerTest {
 
         pieceManager.removePiece(piece);
 
-        JigsawClassLoader classLoader = pieceManager.getClassLoaderManager()
+        JigsawClassLoader classLoader = (JigsawClassLoader) pieceManager.getClassLoaderManager()
                 .getClassLoader("com.jigsawtestdependency.Printer", piece.getId());
 
         Assert.assertNull(classLoader);

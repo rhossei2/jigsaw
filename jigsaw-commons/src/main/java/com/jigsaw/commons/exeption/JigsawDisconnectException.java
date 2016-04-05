@@ -1,4 +1,4 @@
-package com.commons.exeption;
+package com.jigsaw.commons.exeption;
 
 /**
  * Created by RH on 3/28/2016.

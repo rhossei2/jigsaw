@@ -1,4 +1,4 @@
-package com.core.util;
+package com.jigsaw.core.util;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,14 +1,14 @@
-package com.core.manager;
+package com.jigsaw.core.manager;
 
-import com.commons.exeption.JigsawAssemblyException;
-import com.commons.exeption.JigsawConnectException;
-import com.commons.exeption.JigsawDisconnectException;
-import com.core.util.JigsawClassLoader;
-import com.commons.model.JigsawPiece;
-import com.commons.model.SimpleJigsawPiece;
-import com.core.util.ResourceLoader;
-import com.core.util.ResourceLoaderFactory;
-import com.core.util.JarUtils;
+import com.jigsaw.commons.exeption.JigsawAssemblyException;
+import com.jigsaw.commons.exeption.JigsawConnectException;
+import com.jigsaw.commons.exeption.JigsawDisconnectException;
+import com.jigsaw.core.util.JigsawClassLoader;
+import com.jigsaw.commons.model.JigsawPiece;
+import com.jigsaw.commons.model.SimpleJigsawPiece;
+import com.jigsaw.core.util.ResourceLoader;
+import com.jigsaw.core.util.ResourceLoaderFactory;
+import com.jigsaw.core.util.JarUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -51,6 +51,16 @@ public class JigsawPieceManager {
 
     @Autowired
     private ClassLoaderManager classLoaderManager;
+
+    public void init() {
+        classLoaderManager.addResource("com.jigsaw.commons.model", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.commons.exception", this.getClass().getClassLoader());
+    }
+
+    public void destroy() {
+        classLoaderManager.removeResource("com.jigsaw.commons.model", this.getClass().getClassLoader());
+        classLoaderManager.removeResource("com.jigsaw.commons.exception", this.getClass().getClassLoader());
+    }
 
     public boolean hasPiece(String pieceId) {
         return pieces.containsKey(pieceId);
@@ -257,8 +267,7 @@ public class JigsawPieceManager {
 
         JigsawPiece jigsawPiece = convert(root.getArtifact());
 
-        JigsawClassLoader classLoader = classLoaderManager
-                .addClassLoader(jigsawPiece, getClass().getClassLoader());
+        JigsawClassLoader classLoader = classLoaderManager.addClassLoader(jigsawPiece, null);
 
         jigsawPiece.setClassLoader(classLoader);
 

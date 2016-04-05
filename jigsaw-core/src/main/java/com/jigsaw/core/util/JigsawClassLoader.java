@@ -1,7 +1,7 @@
-package com.core.util;
+package com.jigsaw.core.util;
 
-import com.commons.model.JigsawPiece;
-import com.core.manager.ClassLoaderManager;
+import com.jigsaw.commons.model.JigsawPiece;
+import com.jigsaw.core.manager.ClassLoaderManager;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,7 +29,7 @@ public class JigsawClassLoader extends URLClassLoader {
         try {
             return super.loadClass(className);
         } catch (ClassNotFoundException e) {
-            JigsawClassLoader classLoader = classLoaderManager
+            ClassLoader classLoader = classLoaderManager
                     .getClassLoader(className, jigsawPiece.getId());
             if (classLoader == null) {
                 throw new ClassNotFoundException("Unable to find a ClassLoader for class: " + className);

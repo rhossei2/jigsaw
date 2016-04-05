@@ -1,8 +1,8 @@
-package com.core.util;
+package com.jigsaw.core.util;
 
-import com.commons.exeption.JigsawAssemblyException;
-import com.commons.model.JigsawListener;
-import com.commons.model.JigsawPiece;
+import com.jigsaw.commons.exeption.JigsawAssemblyException;
+import com.jigsaw.commons.model.JigsawListener;
+import com.jigsaw.commons.model.JigsawPiece;
 
 public class ListenerResourceLoader extends AbstractResourceLoader
 {

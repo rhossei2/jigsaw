@@ -1,9 +1,9 @@
 package com.jigsaw.manager;
 
-import com.commons.model.JigsawPiece;
-import com.commons.model.SimpleJigsawPiece;
-import com.core.manager.JigsawPieceManager;
-import com.core.util.JarUtils;
+import com.jigsaw.commons.model.JigsawPiece;
+import com.jigsaw.commons.model.SimpleJigsawPiece;
+import com.jigsaw.core.manager.JigsawPieceManager;
+import com.jigsaw.core.util.JarUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

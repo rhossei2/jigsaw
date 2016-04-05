@@ -1,6 +1,6 @@
-package com.core.util;
+package com.jigsaw.core.util;
 
-import com.commons.model.JigsawPiece;
+import com.jigsaw.commons.model.JigsawPiece;
 import java.util.Arrays;
 import java.util.List;
 

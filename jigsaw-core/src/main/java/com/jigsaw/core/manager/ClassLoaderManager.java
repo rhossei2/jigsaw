@@ -1,10 +1,10 @@
-package com.core.manager;
+package com.jigsaw.core.manager;
 
-import com.commons.exeption.JigsawAssemblyException;
-import com.core.util.JigsawClassLoader;
-import com.core.util.JarUtils;
-import com.core.util.JigsawJar;
-import com.commons.model.JigsawPiece;
+import com.jigsaw.commons.exeption.JigsawAssemblyException;
+import com.jigsaw.core.util.JigsawClassLoader;
+import com.jigsaw.core.util.JarUtils;
+import com.jigsaw.core.util.JigsawJar;
+import com.jigsaw.commons.model.JigsawPiece;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,7 +15,7 @@ import java.util.Set;
 
 public class ClassLoaderManager {
 
-    private Map<String, Set<JigsawClassLoader>> moduleClasses = new HashMap();
+    private Map<String, Set<ClassLoader>> moduleClasses = new HashMap<String, Set<ClassLoader>>();
 
     public JigsawClassLoader addClassLoader(JigsawPiece jigsawPiece, ClassLoader parentClassLoader) {
         JigsawJar jar = null;
@@ -77,17 +77,22 @@ public class ClassLoaderManager {
         }
     }
 
-    public JigsawClassLoader getClassLoader(String className, String requestingJigsawPieceId) {
+    public ClassLoader getClassLoader(String className, String requestingJigsawPieceId) {
         String packageName = JarUtils.getPackageName(className);
 
-        Set<JigsawClassLoader> classLoaders = moduleClasses.get(packageName);
+        Set<ClassLoader> classLoaders = moduleClasses.get(packageName);
         if (classLoaders == null) {
             return null;
         }
 
-        for (JigsawClassLoader classLoader : classLoaders) {
-            Set<String> dependants = classLoader.getJigsawPiece().getDependants();
-            if (dependants.contains(requestingJigsawPieceId)) {
+        for (ClassLoader classLoader : classLoaders) {
+            if(classLoader instanceof JigsawClassLoader) {
+                Set<String> dependants = ((JigsawClassLoader)classLoader).getJigsawPiece().getDependants();
+                if (dependants.contains(requestingJigsawPieceId)) {
+                    return classLoader;
+                }
+
+            } else {
                 return classLoader;
             }
         }
@@ -95,10 +100,10 @@ public class ClassLoaderManager {
         return null;
     }
 
-    protected void addResource(String resourceName, JigsawClassLoader classLoader) {
-        Set<JigsawClassLoader> classLoaders = moduleClasses.get(resourceName);
+    public void addResource(String resourceName, ClassLoader classLoader) {
+        Set<ClassLoader> classLoaders = moduleClasses.get(resourceName);
         if (classLoaders == null) {
-            classLoaders = new HashSet<JigsawClassLoader>();
+            classLoaders = new HashSet<ClassLoader>();
         }
 
         classLoaders.add(classLoader);
@@ -106,8 +111,8 @@ public class ClassLoaderManager {
         moduleClasses.put(resourceName, classLoaders);
     }
 
-    protected void removeResource(String resourceName, JigsawClassLoader classLoader) {
-        Set<JigsawClassLoader> classLoaders = moduleClasses.get(resourceName);
+    public void removeResource(String resourceName, ClassLoader classLoader) {
+        Set<ClassLoader> classLoaders = moduleClasses.get(resourceName);
         if (classLoaders == null) {
             return;
         }

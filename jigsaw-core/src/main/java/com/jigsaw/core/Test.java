@@ -1,8 +1,8 @@
-package com.core;
+package com.jigsaw.core;
 
-import com.core.manager.JigsawPieceManager;
-import com.commons.model.JigsawPiece;
-import com.core.util.JsonUtils;
+import com.jigsaw.core.manager.JigsawPieceManager;
+import com.jigsaw.commons.model.JigsawPiece;
+import com.jigsaw.core.util.JsonUtils;
 
 import java.util.Collection;
 

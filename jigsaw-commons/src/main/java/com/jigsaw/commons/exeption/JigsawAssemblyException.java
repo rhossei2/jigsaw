@@ -1,4 +1,4 @@
-package com.commons.exeption;
+package com.jigsaw.commons.exeption;
 
 
 public class JigsawAssemblyException

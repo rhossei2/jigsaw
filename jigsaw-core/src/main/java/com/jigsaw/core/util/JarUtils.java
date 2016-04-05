@@ -1,4 +1,4 @@
-package com.core.util;
+package com.jigsaw.core.util;
 
 import org.apache.commons.codec.digest.DigestUtils;
 

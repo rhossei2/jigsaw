@@ -1,4 +1,4 @@
-package com.commons.model;
+package com.jigsaw.commons.model;
 
 import java.io.File;
 import java.util.HashSet;
