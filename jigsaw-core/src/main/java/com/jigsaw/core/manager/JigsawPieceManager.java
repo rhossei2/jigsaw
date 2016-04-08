@@ -3,12 +3,10 @@ package com.jigsaw.core.manager;
 import com.jigsaw.commons.exeption.JigsawAssemblyException;
 import com.jigsaw.commons.exeption.JigsawConnectException;
 import com.jigsaw.commons.exeption.JigsawDisconnectException;
-import com.jigsaw.core.util.JigsawClassLoader;
 import com.jigsaw.commons.model.JigsawPiece;
 import com.jigsaw.commons.model.SimpleJigsawPiece;
-import com.jigsaw.core.util.ResourceLoader;
-import com.jigsaw.core.util.ResourceLoaderFactory;
 import com.jigsaw.core.util.JarUtils;
+import com.jigsaw.core.util.ResourceLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -32,7 +30,6 @@ import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.*;
@@ -45,11 +42,10 @@ public class JigsawPieceManager {
 
     private String[] remoteRepositories = new String[]{};
 
-    private ResourceLoader resourceLoader = ResourceLoaderFactory.getInstance();
+    private ResourceLoader resourceLoader;
 
     private Map<String, JigsawPiece> pieces = new LinkedHashMap<String, JigsawPiece>();
 
-    @Autowired
     private ClassLoaderManager classLoaderManager;
 
     public void init() {
@@ -184,7 +180,7 @@ public class JigsawPieceManager {
     public Set<JigsawPiece> removePiece(JigsawPiece jigsawPiece) {
         Set<JigsawPiece> disconnectedPieces = disconnectPiece(jigsawPiece);
         for (JigsawPiece disconnectedPiece : disconnectedPieces) {
-            classLoaderManager.removeClassLoader((JigsawClassLoader) disconnectedPiece.getClassLoader());
+            classLoaderManager.removeClassLoader((ClassLoaderManager.JigsawClassLoader) disconnectedPiece.getClassLoader());
 
             pieces.remove(disconnectedPiece.getId());
         }
@@ -267,7 +263,7 @@ public class JigsawPieceManager {
 
         JigsawPiece jigsawPiece = convert(root.getArtifact());
 
-        JigsawClassLoader classLoader = classLoaderManager.addClassLoader(jigsawPiece, null);
+        ClassLoaderManager.JigsawClassLoader classLoader = classLoaderManager.addClassLoader(jigsawPiece, null);
 
         jigsawPiece.setClassLoader(classLoader);
 
@@ -344,5 +340,13 @@ public class JigsawPieceManager {
 
     public ClassLoaderManager getClassLoaderManager() {
         return classLoaderManager;
+    }
+
+    public void setResourceLoader(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
+    }
+
+    public void setClassLoaderManager(ClassLoaderManager classLoaderManager) {
+        this.classLoaderManager = classLoaderManager;
     }
 }

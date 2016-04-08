@@ -2,7 +2,6 @@ package com.jigsaw.core;
 
 import com.jigsaw.core.manager.JigsawPieceManager;
 import com.jigsaw.commons.model.JigsawPiece;
-import com.jigsaw.core.util.JsonUtils;
 
 import java.util.Collection;
 
@@ -17,7 +16,5 @@ public class Test {
         assembler.connectPiece(piece);
 
         Collection<JigsawPiece> installed = assembler.getPieces();
-
-        System.out.println(JsonUtils.toString(assembler.getPieces()));
     }
 }

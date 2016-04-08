@@ -13,9 +13,6 @@ public class SimpleJigsawPiece {
 
     private Status status;
 
-    public SimpleJigsawPiece() {
-    }
-
     public String getId() {
         return id;
     }

@@ -1,12 +1,14 @@
 package com.jigsaw.core.manager;
 
 import com.jigsaw.commons.exeption.JigsawAssemblyException;
-import com.jigsaw.core.util.JigsawClassLoader;
+import com.jigsaw.commons.model.JigsawPiece;
 import com.jigsaw.core.util.JarUtils;
 import com.jigsaw.core.util.JigsawJar;
-import com.jigsaw.commons.model.JigsawPiece;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,13 +17,13 @@ import java.util.Set;
 
 public class ClassLoaderManager {
 
-    private Map<String, Set<ClassLoader>> moduleClasses = new HashMap<String, Set<ClassLoader>>();
+    private Map<String, Set<java.lang.ClassLoader>> moduleClasses = new HashMap<String, Set<java.lang.ClassLoader>>();
 
-    public JigsawClassLoader addClassLoader(JigsawPiece jigsawPiece, ClassLoader parentClassLoader) {
+    public JigsawClassLoader addClassLoader(JigsawPiece jigsawPiece, java.lang.ClassLoader parentClassLoader) {
         JigsawJar jar = null;
         try {
             JigsawClassLoader classLoader =
-                    new JigsawClassLoader(jigsawPiece, parentClassLoader, this);
+                    new JigsawClassLoader(jigsawPiece, parentClassLoader);
 
             jar = new JigsawJar(classLoader.getJigsawPiece().getFile(), true);
             for (String packageName : jar.getPackageNames()) {
@@ -37,7 +39,7 @@ public class ClassLoaderManager {
         } catch (IOException e) {
             throw new JigsawAssemblyException("Unable to scan resources in " + jigsawPiece.getId(), e);
         } finally {
-            if(jar != null){
+            if (jar != null) {
                 try {
                     jar.close();
 
@@ -49,7 +51,7 @@ public class ClassLoaderManager {
     }
 
     public void removeClassLoader(JigsawClassLoader classLoader) {
-        JigsawJar jar= null;
+        JigsawJar jar = null;
         try {
             jar = new JigsawJar(classLoader.getJigsawPiece().getFile(), true);
 
@@ -66,7 +68,7 @@ public class ClassLoaderManager {
         } catch (IOException e) {
             throw new JigsawAssemblyException("Unable to scan resources in " + classLoader.getJigsawPiece().getId(), e);
         } finally {
-            if(jar != null){
+            if (jar != null) {
                 try {
                     jar.close();
 
@@ -86,8 +88,8 @@ public class ClassLoaderManager {
         }
 
         for (ClassLoader classLoader : classLoaders) {
-            if(classLoader instanceof JigsawClassLoader) {
-                Set<String> dependants = ((JigsawClassLoader)classLoader).getJigsawPiece().getDependants();
+            if (classLoader instanceof JigsawClassLoader) {
+                Set<String> dependants = ((JigsawClassLoader) classLoader).getJigsawPiece().getDependants();
                 if (dependants.contains(requestingJigsawPieceId)) {
                     return classLoader;
                 }
@@ -119,8 +121,45 @@ public class ClassLoaderManager {
 
         classLoaders.remove(classLoader);
 
-        if(classLoaders.isEmpty()) {
+        if (classLoaders.isEmpty()) {
             moduleClasses.remove(resourceName);
+        }
+    }
+
+    public class JigsawClassLoader extends URLClassLoader {
+
+        private JigsawPiece jigsawPiece;
+
+        public JigsawClassLoader(JigsawPiece jigsawPiece,
+                                 ClassLoader parentClassLoader)
+                throws MalformedURLException {
+            super(new URL[]{jigsawPiece.getFile().toURI().toURL()}, parentClassLoader);
+
+            this.jigsawPiece = jigsawPiece;
+        }
+
+        @Override
+        public Class<?> loadClass(String className) throws ClassNotFoundException {
+            try {
+                return super.loadClass(className);
+            } catch (ClassNotFoundException e) {
+                ClassLoader classLoader =
+                        getClassLoader(className, jigsawPiece.getId());
+
+                if (classLoader == null) {
+                    throw new ClassNotFoundException("Unable to find a JigsawClassLoader for class: " + className);
+                }
+
+                return classLoader.loadClass(className);
+            }
+        }
+
+        public Package[] getPackages() {
+            return super.getPackages();
+        }
+
+        public JigsawPiece getJigsawPiece() {
+            return jigsawPiece;
         }
     }
 }
