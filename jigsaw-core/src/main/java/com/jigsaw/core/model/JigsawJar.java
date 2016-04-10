@@ -1,4 +1,6 @@
-package com.jigsaw.core.util;
+package com.jigsaw.core.model;
+
+import com.jigsaw.core.util.JarUtils;
 
 import java.io.File;
 import java.io.IOException;

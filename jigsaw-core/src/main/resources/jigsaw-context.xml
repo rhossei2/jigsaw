@@ -7,16 +7,6 @@
     <context:property-placeholder location="classpath:jigsaw.properties,file:config/jigsaw.properties"
                                   ignore-resource-not-found="true"/>
 
-    <bean id="resourceLoader" class="com.jigsaw.core.util.DelegatingResourceLoader"/>
-
-    <bean id="classLoaderManager" class="com.jigsaw.core.manager.ClassLoaderManager"/>
-
-    <bean id="jigsawPieceManager" class="com.jigsaw.core.manager.JigsawPieceManager"
-        init-method="init" destroy-method="destroy">
-        <property name="localRepository" value="${jigsaw.repositories.local}"/>
-        <property name="remoteRepositories" value="${jigsaw.repositories.remote}"/>
-        <property name="classLoaderManager" ref="classLoaderManager"/>
-        <property name="resourceLoader" ref="resourceLoader"/>
-    </bean>
+    <import resource="core-context.xml"/>
 
 </beans>

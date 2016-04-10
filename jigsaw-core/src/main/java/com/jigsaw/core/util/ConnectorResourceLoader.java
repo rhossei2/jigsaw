@@ -1,8 +1,8 @@
 package com.jigsaw.core.util;
 
-import com.jigsaw.commons.exeption.JigsawAssemblyException;
-import com.jigsaw.commons.model.JigsawConnector;
-import com.jigsaw.commons.model.JigsawPiece;
+import com.jigsaw.core.exeption.JigsawAssemblyException;
+import com.jigsaw.core.JigsawConnector;
+import com.jigsaw.core.model.JigsawPiece;
 
 public class ConnectorResourceLoader extends AbstractResourceLoader {
 

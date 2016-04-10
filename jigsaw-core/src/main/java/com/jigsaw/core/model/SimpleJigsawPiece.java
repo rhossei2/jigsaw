@@ -1,4 +1,4 @@
-package com.jigsaw.commons.model;
+package com.jigsaw.core.model;
 
 
 public class SimpleJigsawPiece {

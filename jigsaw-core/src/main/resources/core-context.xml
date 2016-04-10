@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="resourceLoader" class="com.jigsaw.core.util.DelegatingResourceLoader">
+        <property name="loaders">
+            <list>
+                <bean id="connectorResourceLoader" class="com.jigsaw.core.util.ConnectorResourceLoader"/>
+                <bean id="listenerResourceLoader" class="com.jigsaw.core.util.ListenerResourceLoader"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="classLoaderManager" class="com.jigsaw.core.manager.ClassLoaderManager"/>
+
+    <bean id="jigsawPieceManager" class="com.jigsaw.core.manager.JigsawPieceManager"
+          init-method="init" destroy-method="destroy">
+        <property name="localRepository" value="${jigsaw.repositories.local}"/>
+        <property name="remoteRepositories" value="${jigsaw.repositories.remote}"/>
+        <property name="classLoaderManager" ref="classLoaderManager"/>
+        <property name="resourceLoader" ref="resourceLoader"/>
+        <property name="artifactToJigsawPieceConverter" ref="artifactToJigsawPieceManager"/>
+    </bean>
+
+    <bean id="jigsaw" class="com.jigsaw.core.Jigsaw"
+          init-method="assemble" destroy-method="disAssemble">
+        <property name="pieceManager" ref="jigsawPieceManager"/>
+        <property name="dbPath" value="${jigsaw.db}"/>
+    </bean>
+
+    <!-- Converters -->
+    <bean id="artifactToJigsawPieceManager" class="com.jigsaw.core.converter.ArtifactToJigsawPieceConverter"/>
+
+</beans>

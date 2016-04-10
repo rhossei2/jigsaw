@@ -1,6 +1,6 @@
 package com.jigsaw.core.util;
 
-import com.jigsaw.commons.model.JigsawPiece;
+import com.jigsaw.core.model.JigsawPiece;
 
 public abstract interface ResourceLoader
 {

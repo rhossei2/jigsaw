@@ -1,21 +1,22 @@
 package com.jigsaw.core.util;
 
-import com.jigsaw.commons.model.JigsawPiece;
-import java.util.Arrays;
+import com.jigsaw.core.model.JigsawPiece;
+
+import java.util.ArrayList;
 import java.util.List;
 
 
+public class DelegatingResourceLoader implements ResourceLoader {
 
+    private List<AbstractResourceLoader> loaders = new ArrayList<AbstractResourceLoader>();
 
-public class DelegatingResourceLoader
-  implements ResourceLoader
-{
-  private List<AbstractResourceLoader> loaders = Arrays.asList(new AbstractResourceLoader[] { new ConnectorResourceLoader(), new ListenerResourceLoader() });
-  
-  public DelegatingResourceLoader() {}
-  
-  public void loadResources(JigsawPiece piece) { for (ResourceLoader loader : loaders) {
-      loader.loadResources(piece);
+    public void loadResources(JigsawPiece piece) {
+        for (ResourceLoader loader : loaders) {
+            loader.loadResources(piece);
+        }
     }
-  }
+
+    public void setLoaders(List<AbstractResourceLoader> loaders) {
+        this.loaders = loaders;
+    }
 }

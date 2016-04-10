@@ -1,10 +1,11 @@
 package com.jigsaw.core.manager;
 
-import com.jigsaw.commons.exeption.JigsawAssemblyException;
-import com.jigsaw.commons.exeption.JigsawConnectException;
-import com.jigsaw.commons.exeption.JigsawDisconnectException;
-import com.jigsaw.commons.model.JigsawPiece;
-import com.jigsaw.commons.model.SimpleJigsawPiece;
+import com.jigsaw.core.exeption.JigsawAssemblyException;
+import com.jigsaw.core.exeption.JigsawConnectException;
+import com.jigsaw.core.exeption.JigsawDisconnectException;
+import com.jigsaw.core.model.JigsawPiece;
+import com.jigsaw.core.model.SimpleJigsawPiece;
+import com.jigsaw.core.converter.ArtifactToJigsawPieceConverter;
 import com.jigsaw.core.util.JarUtils;
 import com.jigsaw.core.util.ResourceLoader;
 import org.apache.commons.lang3.StringUtils;
@@ -12,7 +13,6 @@ import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
-import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.collection.DependencyCollectionException;
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
@@ -31,7 +31,6 @@ import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.*;
 
 public class JigsawPieceManager {
@@ -48,14 +47,24 @@ public class JigsawPieceManager {
 
     private ClassLoaderManager classLoaderManager;
 
+    private ArtifactToJigsawPieceConverter artifactToJigsawPieceConverter;
+
     public void init() {
-        classLoaderManager.addResource("com.jigsaw.commons.model", this.getClass().getClassLoader());
-        classLoaderManager.addResource("com.jigsaw.commons.exception", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.core", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.core.model", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.core.manager", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.core.util", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.core.converter", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.core.exception", this.getClass().getClassLoader());
     }
 
     public void destroy() {
-        classLoaderManager.removeResource("com.jigsaw.commons.model", this.getClass().getClassLoader());
-        classLoaderManager.removeResource("com.jigsaw.commons.exception", this.getClass().getClassLoader());
+        classLoaderManager.removeResource("com.jigsaw.core", this.getClass().getClassLoader());
+        classLoaderManager.removeResource("com.jigsaw.core.model", this.getClass().getClassLoader());
+        classLoaderManager.removeResource("com.jigsaw.core.manager", this.getClass().getClassLoader());
+        classLoaderManager.removeResource("com.jigsaw.core.util", this.getClass().getClassLoader());
+        classLoaderManager.removeResource("com.jigsaw.core.converter", this.getClass().getClassLoader());
+        classLoaderManager.removeResource("com.jigsaw.core.exception", this.getClass().getClassLoader());
     }
 
     public boolean hasPiece(String pieceId) {
@@ -256,12 +265,12 @@ public class JigsawPieceManager {
     }
 
     protected JigsawPiece addPiece(String dependantId, DependencyNode root) {
-        String rootId = generateId(root.getArtifact());
+        String rootId = JarUtils.generateId(root.getArtifact());
         if (hasPiece(rootId)) {
             return getPiece(rootId);
         }
 
-        JigsawPiece jigsawPiece = convert(root.getArtifact());
+        JigsawPiece jigsawPiece = artifactToJigsawPieceConverter.convert(root.getArtifact());
 
         ClassLoaderManager.JigsawClassLoader classLoader = classLoaderManager.addClassLoader(jigsawPiece, null);
 
@@ -301,35 +310,6 @@ public class JigsawPieceManager {
         return session;
     }
 
-    protected JigsawPiece convert(Artifact artifact) {
-        JigsawPiece jigsawPiece = new JigsawPiece();
-        jigsawPiece.setId(generateId(artifact));
-        jigsawPiece.setArtifactId(artifact.getArtifactId());
-        jigsawPiece.setGroupId(artifact.getGroupId());
-        jigsawPiece.setVersion(artifact.getVersion());
-        jigsawPiece.setFile(artifact.getFile());
-
-        return jigsawPiece;
-    }
-
-    protected String generateId(Artifact artifact) {
-        try {
-            StringBuffer sb = new StringBuffer()
-                    .append(artifact.getGroupId())
-                    .append(":")
-                    .append(artifact.getArtifactId())
-                    .append(":")
-                    .append(artifact.getVersion())
-                    .append(":")
-                    .append(JarUtils.getChecksum(artifact.getFile()));
-
-            return sb.toString();
-
-        } catch (IOException e) {
-            throw new JigsawAssemblyException("Unable to generate an id for the artifact", e);
-        }
-    }
-
     public void setLocalRepository(String localRepository) {
         this.localRepository = localRepository;
     }
@@ -348,5 +328,9 @@ public class JigsawPieceManager {
 
     public void setClassLoaderManager(ClassLoaderManager classLoaderManager) {
         this.classLoaderManager = classLoaderManager;
+    }
+
+    public void setArtifactToJigsawPieceConverter(ArtifactToJigsawPieceConverter artifactToJigsawPieceConverter) {
+        this.artifactToJigsawPieceConverter = artifactToJigsawPieceConverter;
     }
 }

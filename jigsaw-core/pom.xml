@@ -15,12 +15,6 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <dependencies>
-        <!-- Jigsaw -->
-        <dependency>
-            <groupId>com.jigsaw</groupId>
-            <artifactId>jigsaw-commons</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
 
         <!-- Eclipse Aether Dependencies -->
         <dependency>

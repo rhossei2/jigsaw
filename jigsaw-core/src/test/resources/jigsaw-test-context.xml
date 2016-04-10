@@ -6,6 +6,6 @@
 
     <context:property-placeholder location="file:target/test-classes/config/jigsaw.properties"/>
 
-    <import resource="jigsaw-context.xml"/>
+    <import resource="core-context.xml"/>
 
 </beans>

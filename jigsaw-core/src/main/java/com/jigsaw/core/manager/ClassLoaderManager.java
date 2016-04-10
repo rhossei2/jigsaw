@@ -1,9 +1,9 @@
 package com.jigsaw.core.manager;
 
-import com.jigsaw.commons.exeption.JigsawAssemblyException;
-import com.jigsaw.commons.model.JigsawPiece;
+import com.jigsaw.core.exeption.JigsawAssemblyException;
+import com.jigsaw.core.model.JigsawPiece;
 import com.jigsaw.core.util.JarUtils;
-import com.jigsaw.core.util.JigsawJar;
+import com.jigsaw.core.model.JigsawJar;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

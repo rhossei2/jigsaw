@@ -1,6 +1,8 @@
 package com.jigsaw.core.util;
 
+import com.jigsaw.core.exeption.JigsawAssemblyException;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.eclipse.aether.artifact.Artifact;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,5 +51,23 @@ public class JarUtils {
         }
 
         return false;
+    }
+
+    public static String generateId(Artifact artifact) {
+        try {
+            StringBuffer sb = new StringBuffer()
+                    .append(artifact.getGroupId())
+                    .append(":")
+                    .append(artifact.getArtifactId())
+                    .append(":")
+                    .append(artifact.getVersion())
+                    .append(":")
+                    .append(getChecksum(artifact.getFile()));
+
+            return sb.toString();
+
+        } catch (IOException e) {
+            throw new JigsawAssemblyException("Unable to generate an id for the artifact", e);
+        }
     }
 }

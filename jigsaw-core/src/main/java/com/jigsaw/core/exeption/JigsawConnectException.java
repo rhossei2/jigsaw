@@ -1,4 +1,4 @@
-package com.jigsaw.commons.exeption;
+package com.jigsaw.core.exeption;
 
 
 public class JigsawConnectException extends JigsawAssemblyException {

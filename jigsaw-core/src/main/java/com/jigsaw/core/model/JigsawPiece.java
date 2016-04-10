@@ -1,4 +1,7 @@
-package com.jigsaw.commons.model;
+package com.jigsaw.core.model;
+
+import com.jigsaw.core.JigsawConnector;
+import com.jigsaw.core.JigsawListener;
 
 import java.io.File;
 import java.util.HashSet;

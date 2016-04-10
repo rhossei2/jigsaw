@@ -11,7 +11,7 @@
     <dependencies>
         <dependency>
             <groupId>com.jigsaw</groupId>
-            <artifactId>jigsaw-commons</artifactId>
+            <artifactId>jigsaw-core</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>

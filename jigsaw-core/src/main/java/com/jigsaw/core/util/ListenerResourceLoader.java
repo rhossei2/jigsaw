@@ -1,12 +1,10 @@
 package com.jigsaw.core.util;
 
-import com.jigsaw.commons.exeption.JigsawAssemblyException;
-import com.jigsaw.commons.model.JigsawListener;
-import com.jigsaw.commons.model.JigsawPiece;
+import com.jigsaw.core.exeption.JigsawAssemblyException;
+import com.jigsaw.core.model.JigsawPiece;
+import com.jigsaw.core.JigsawListener;
 
 public class ListenerResourceLoader extends AbstractResourceLoader {
-    public ListenerResourceLoader() {
-    }
 
     protected void loadResourceInternal(JigsawPiece piece) {
         if (piece.getListener() != null) {
@@ -27,6 +25,7 @@ public class ListenerResourceLoader extends AbstractResourceLoader {
             JigsawListener listener = (JigsawListener) listenerClass.newInstance();
 
             piece.setListener(listener);
+
         } catch (ClassNotFoundException e) {
             throw new JigsawAssemblyException("Unable to load listener", e);
         } catch (InstantiationException e) {

@@ -14,7 +14,6 @@
     </dependencies>
 
     <modules>
-        <module>jigsaw-commons</module>
         <module>jigsaw-core</module>
     </modules>
 

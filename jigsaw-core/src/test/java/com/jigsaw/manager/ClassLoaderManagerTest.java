@@ -1,6 +1,6 @@
 package com.jigsaw.manager;
 
-import com.jigsaw.commons.model.JigsawPiece;
+import com.jigsaw.core.model.JigsawPiece;
 import com.jigsaw.core.manager.ClassLoaderManager;
 import com.jigsaw.core.manager.JigsawPieceManager;
 import com.jigsaw.core.util.JarUtils;

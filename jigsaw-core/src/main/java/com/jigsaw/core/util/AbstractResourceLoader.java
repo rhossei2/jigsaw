@@ -1,7 +1,7 @@
 package com.jigsaw.core.util;
 
-import com.jigsaw.commons.exeption.JigsawAssemblyException;
-import com.jigsaw.commons.model.JigsawPiece;
+import com.jigsaw.core.exeption.JigsawAssemblyException;
+import com.jigsaw.core.model.JigsawPiece;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

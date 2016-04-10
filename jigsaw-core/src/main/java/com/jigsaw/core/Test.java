@@ -1,7 +1,7 @@
 package com.jigsaw.core;
 
 import com.jigsaw.core.manager.JigsawPieceManager;
-import com.jigsaw.commons.model.JigsawPiece;
+import com.jigsaw.core.model.JigsawPiece;
 
 import java.util.Collection;
 
