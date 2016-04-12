@@ -1,8 +1,11 @@
 package com.jigsaw.core.model;
 
 
+import com.google.gson.annotations.Expose;
+
 public class SimpleJigsawPiece {
 
+    @Expose(serialize = false)
     private String id;
 
     private String groupId;
@@ -11,7 +14,7 @@ public class SimpleJigsawPiece {
 
     private String version;
 
-    private Status status;
+    private JigsawPieceStatus status;
 
     public String getId() {
         return id;
@@ -45,11 +48,11 @@ public class SimpleJigsawPiece {
         this.version = version;
     }
 
-    public Status getStatus() {
+    public JigsawPieceStatus getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(JigsawPieceStatus status) {
         this.status = status;
     }
 
@@ -70,15 +73,5 @@ public class SimpleJigsawPiece {
 
     public String toString() {
         return "SimpleJigsawPiece{id='" + id + '\'' + ", groupId='" + groupId + '\'' + ", artifactId='" + artifactId + '\'' + ", version='" + version + '\'' + ", status='" + status + '\'' + '}';
-    }
-
-
-    public static enum Status {
-        CONNECTED,
-
-        DISCONNECTED;
-
-        private Status() {
-        }
     }
 }

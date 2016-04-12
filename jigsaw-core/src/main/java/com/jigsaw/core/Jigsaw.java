@@ -1,21 +1,12 @@
 package com.jigsaw.core;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import com.jigsaw.core.exeption.JigsawAssemblyException;
-import com.jigsaw.core.model.JigsawPiece;
-import com.jigsaw.core.model.SimpleJigsawPiece;
 import com.jigsaw.core.manager.JigsawPieceManager;
+import com.jigsaw.core.model.JigsawPiece;
+import com.jigsaw.core.model.JigsawPieceStatus;
+import com.jigsaw.core.model.SimpleJigsawPiece;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,49 +14,20 @@ import java.util.List;
  */
 public class Jigsaw {
 
-    private String dbPath;
-
     private JigsawPieceManager pieceManager;
 
     private static final Logger log = LoggerFactory.getLogger(Jigsaw.class);
 
     public void assemble() {
-        Reader reader = null;
-        try {
-            InputStream is = this.getClass().getResourceAsStream(dbPath);
-            if(is == null) {
-                log.warn("No db file found at " + dbPath);
+        List<SimpleJigsawPiece> dbPieces = pieceManager.getPersistedPieces();
+        for (SimpleJigsawPiece dbPiece : dbPieces) {
+            JigsawPiece piece = pieceManager
+                    .addPiece(dbPiece.getGroupId(), dbPiece.getArtifactId(), dbPiece.getVersion());
 
-                return;
-            }
-
-            reader = new InputStreamReader(is, "UTF-8");
-
-            Type listType = new TypeToken<ArrayList<SimpleJigsawPiece>>() {
-            }.getType();
-
-            Gson gson = new GsonBuilder().create();
-            List<SimpleJigsawPiece> dbPieces = gson.fromJson(reader, listType);
-            for (SimpleJigsawPiece dbPiece : dbPieces) {
-                JigsawPiece piece = pieceManager
-                        .addPiece(dbPiece.getGroupId(), dbPiece.getArtifactId(), dbPiece.getVersion());
-
-                if (dbPiece.getStatus() == SimpleJigsawPiece.Status.CONNECTED) {
-                    pieceManager.connectPiece(piece);
-                    if(piece.getListener() != null) {
-                        piece.getListener().setJigsaw(this);
-                    }
-                }
-            }
-
-        } catch (IOException e) {
-            throw new JigsawAssemblyException("Unable to assemble jigsaw pieces", e);
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    throw new JigsawAssemblyException("Unable to close db file", e);
+            if (dbPiece.getStatus() == JigsawPieceStatus.CONNECTED) {
+                pieceManager.connectPiece(piece);
+                if(piece.getListener() != null) {
+                    piece.getListener().setJigsaw(this);
                 }
             }
         }
@@ -87,6 +49,8 @@ public class Jigsaw {
             piece.getListener().setJigsaw(this);
         }
 
+        pieceManager.persistPieces();
+
         return piece;
     }
 
@@ -103,6 +67,8 @@ public class Jigsaw {
             newPiece.getListener().setJigsaw(this);
         }
 
+        pieceManager.persistPieces();
+
         return newPiece;
     }
 
@@ -117,6 +83,8 @@ public class Jigsaw {
         } else {
             pieceManager.disconnectPiece(piece);
         }
+
+        pieceManager.persistPieces();
     }
 
     protected void invokeAssemblyListeners(JigsawPiece jigsawPiece) {
@@ -139,10 +107,6 @@ public class Jigsaw {
 
     public void setPieceManager(JigsawPieceManager pieceManager) {
         this.pieceManager = pieceManager;
-    }
-
-    public void setDbPath(String dbPath) {
-        this.dbPath = dbPath;
     }
 
     public JigsawPieceManager getPieceManager() {

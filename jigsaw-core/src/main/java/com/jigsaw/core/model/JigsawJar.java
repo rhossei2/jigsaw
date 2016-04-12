@@ -13,9 +13,9 @@ import java.util.jar.JarFile;
 
 public class JigsawJar extends JarFile {
 
-    private List<String> packageNames = new ArrayList();
+    private List<String> packageNames = new ArrayList<String>();
 
-    private List<String> resourceNames = new ArrayList();
+    private List<String> resourceNames = new ArrayList<String>();
 
     public JigsawJar(String name, boolean loadResources) throws IOException {
         super(name);

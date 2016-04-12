@@ -5,7 +5,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * Created by RH on 4/9/2016.
  */
-public class JigsawFactory {
+public class JigsawBuilder {
 
     private ClassPathXmlApplicationContext applicationContext;
 

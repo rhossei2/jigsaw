@@ -1,11 +1,15 @@
 package com.jigsaw.core.manager;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.jigsaw.core.converter.ArtifactToJigsawPieceConverter;
 import com.jigsaw.core.exeption.JigsawAssemblyException;
 import com.jigsaw.core.exeption.JigsawConnectException;
 import com.jigsaw.core.exeption.JigsawDisconnectException;
 import com.jigsaw.core.model.JigsawPiece;
+import com.jigsaw.core.model.JigsawPieceStatus;
 import com.jigsaw.core.model.SimpleJigsawPiece;
-import com.jigsaw.core.converter.ArtifactToJigsawPieceConverter;
 import com.jigsaw.core.util.JarUtils;
 import com.jigsaw.core.util.ResourceLoader;
 import org.apache.commons.lang3.StringUtils;
@@ -31,11 +35,17 @@ import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
+import java.lang.reflect.Type;
+import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class JigsawPieceManager {
 
     private static final Logger log = LoggerFactory.getLogger(JigsawPieceManager.class);
+
+    private String DB_FILE = "jigsaw-db.json";
 
     private String localRepository = "C:\\projects\\out";
 
@@ -43,7 +53,7 @@ public class JigsawPieceManager {
 
     private ResourceLoader resourceLoader;
 
-    private Map<String, JigsawPiece> pieces = new LinkedHashMap<String, JigsawPiece>();
+    private Map<String, JigsawPiece> pieces = new ConcurrentHashMap<String, JigsawPiece>();
 
     private ClassLoaderManager classLoaderManager;
 
@@ -65,6 +75,64 @@ public class JigsawPieceManager {
         classLoaderManager.removeResource("com.jigsaw.core.util", this.getClass().getClassLoader());
         classLoaderManager.removeResource("com.jigsaw.core.converter", this.getClass().getClassLoader());
         classLoaderManager.removeResource("com.jigsaw.core.exception", this.getClass().getClassLoader());
+    }
+
+    public List<SimpleJigsawPiece> getPersistedPieces() {
+        Reader reader = null;
+        try {
+            URL dbUrl = getClass().getResource(getDbFilePath());
+            if(dbUrl == null) {
+                log.warn("No db file found at " + getDbFilePath());
+
+                return new ArrayList();
+            }
+
+            reader = new FileReader(dbUrl.getFile());
+
+            Type listType = new TypeToken<ArrayList<SimpleJigsawPiece>>() {
+            }.getType();
+
+            Gson gson = new GsonBuilder().create();
+            List<SimpleJigsawPiece> dbPieces = gson.fromJson(reader, listType);
+
+            return dbPieces;
+
+        } catch (IOException e) {
+            log.error("Unable to read jigsaw pieces from db file", e);
+        } finally {
+            try {
+                if(reader != null) {
+                    reader.close();
+                }
+
+            } catch (IOException e) {
+                log.error("Unable to close db file", e);
+            }
+        }
+
+        return new ArrayList();
+    }
+
+    public void persistPieces() {
+        Writer writer = null;
+        try {
+            writer = new FileWriter(new File(getDbFilePath()));
+
+            Gson gson = new GsonBuilder().create();
+            gson.toJson(getPieces(), writer);
+
+        } catch (IOException e) {
+            log.error("Unable to write jigsaw pieces to db file", e);
+        } finally {
+            try {
+                if(writer != null) {
+                    writer.close();
+                }
+
+            } catch (IOException e) {
+                log.error("Unable to close db file", e);
+            }
+        }
     }
 
     public boolean hasPiece(String pieceId) {
@@ -90,7 +158,7 @@ public class JigsawPieceManager {
     public Set<JigsawPiece> connectPiece(JigsawPiece jigsawPiece) throws JigsawConnectException {
         Set<JigsawPiece> connectedPieces = new HashSet<JigsawPiece>();
 
-        if (jigsawPiece.getStatus() == SimpleJigsawPiece.Status.CONNECTED) {
+        if (jigsawPiece.getStatus() == JigsawPieceStatus.CONNECTED) {
             return connectedPieces;
         }
 
@@ -106,8 +174,8 @@ public class JigsawPieceManager {
                 connectInternal(getPiece(dependencyId), connectedPieces);
             }
 
-            if (jigsawPiece.getStatus() != SimpleJigsawPiece.Status.CONNECTED) {
-                jigsawPiece.setStatus(SimpleJigsawPiece.Status.CONNECTED);
+            if (jigsawPiece.getStatus() != JigsawPieceStatus.CONNECTED) {
+                jigsawPiece.setStatus(JigsawPieceStatus.CONNECTED);
 
                 resourceLoader.loadResources(jigsawPiece);
 
@@ -138,7 +206,7 @@ public class JigsawPieceManager {
 
         Set<JigsawPiece> disconnectedPieces = new HashSet<JigsawPiece>();
 
-        if (jigsawPiece.getStatus() == SimpleJigsawPiece.Status.DISCONNECTED) {
+        if (jigsawPiece.getStatus() == JigsawPieceStatus.DISCONNECTED) {
             return disconnectedPieces;
         }
 
@@ -149,8 +217,8 @@ public class JigsawPieceManager {
 
     protected void disconnectInternal(JigsawPiece jigsawPiece, Set<JigsawPiece> disconnectedPieces) {
         try {
-            if (jigsawPiece.getStatus() == SimpleJigsawPiece.Status.CONNECTED) {
-                jigsawPiece.setStatus(SimpleJigsawPiece.Status.DISCONNECTED);
+            if (jigsawPiece.getStatus() == JigsawPieceStatus.CONNECTED) {
+                jigsawPiece.setStatus(JigsawPieceStatus.DISCONNECTED);
 
                 resourceLoader.loadResources(jigsawPiece);
 
@@ -304,7 +372,16 @@ public class JigsawPieceManager {
     private RepositorySystemSession newSession(RepositorySystem system) {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 
-        LocalRepository localRepo = new LocalRepository(localRepository);
+        URL localPath = getClass().getResource(localRepository);
+        if(localPath == null) {
+            log.warn("Unable to find the local repository at " + localRepository);
+
+            return session;
+        }
+
+        log.info("Setting local repository to " + localPath.getFile());
+
+        LocalRepository localRepo = new LocalRepository(localPath.getFile());
         session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
 
         return session;
@@ -332,5 +409,13 @@ public class JigsawPieceManager {
 
     public void setArtifactToJigsawPieceConverter(ArtifactToJigsawPieceConverter artifactToJigsawPieceConverter) {
         this.artifactToJigsawPieceConverter = artifactToJigsawPieceConverter;
+    }
+
+    protected String getDbFilePath() {
+        if(localRepository.endsWith("/")) {
+            return localRepository + DB_FILE;
+        } else {
+            return localRepository + "/" + DB_FILE;
+        }
     }
 }

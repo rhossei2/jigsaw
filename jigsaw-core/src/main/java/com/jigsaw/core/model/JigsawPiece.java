@@ -1,5 +1,6 @@
 package com.jigsaw.core.model;
 
+import com.google.gson.annotations.Expose;
 import com.jigsaw.core.JigsawConnector;
 import com.jigsaw.core.JigsawListener;
 
@@ -11,19 +12,26 @@ import java.util.Set;
 
 public class JigsawPiece extends SimpleJigsawPiece {
 
+    @Expose(serialize = false)
     private Properties properties;
 
+    @Expose(serialize = false)
     private JigsawListener listener;
 
+    @Expose(serialize = false)
     private JigsawConnector connector;
 
+    @Expose(serialize = false)
     private ClassLoader classLoader;
 
+    @Expose(serialize = false)
     private File file;
 
-    private Set<String> dependants = new HashSet();
+    @Expose(serialize = false)
+    private Set<String> dependants = new HashSet<String>();
 
-    private Set<String> dependencies = new HashSet();
+    @Expose(serialize = false)
+    private Set<String> dependencies = new HashSet<String>();
 
     public ClassLoader getClassLoader() {
         return classLoader;
