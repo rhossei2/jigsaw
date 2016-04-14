@@ -29,6 +29,7 @@
 
     <modules>
         <module>jigsaw-core</module>
+		<module>jigsaw-web-tomcat</module>
     </modules>
 
 </project>
