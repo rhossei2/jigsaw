@@ -41,6 +41,10 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Manages all the jigsaw pieces and their state
+ * @author Ramtin Hosseini
+ */
 public class JigsawPieceManager {
 
     private static final Logger log = LoggerFactory.getLogger(JigsawPieceManager.class);
@@ -148,8 +152,8 @@ public class JigsawPieceManager {
     }
 
     /**
-     * - First, all dependencies are connected if not already connected <br/>
-     * - Lastly, the piece itself is connected if not already connected
+     * - First, all dependencies are connected<br/>
+     * - Lastly, the piece itself is connected
      *
      * @param jigsawPiece the piece being connected
      * @return list of all connected pieces
@@ -191,8 +195,9 @@ public class JigsawPieceManager {
     }
 
     /**
-     * Disconnects a given piece plus all dependencies that have no more
-     * dependents. <br/>
+     * - First, the piece itself is disconnected <br/>
+     * - Lastly, all dependencies that no longer have any dependents
+     * are disconnected
      *
      * @param jigsawPiece the piece to disconnect
      * @return all the pieces that have been disconnected
@@ -219,8 +224,6 @@ public class JigsawPieceManager {
         try {
             if (jigsawPiece.getStatus() == JigsawPieceStatus.CONNECTED) {
                 jigsawPiece.setStatus(JigsawPieceStatus.DISCONNECTED);
-
-                resourceLoader.loadResources(jigsawPiece);
 
                 if (jigsawPiece.getConnector() != null) {
                     jigsawPiece.getConnector().disconnect(jigsawPiece);

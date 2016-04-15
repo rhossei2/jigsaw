@@ -5,7 +5,7 @@
 
     <servlet>
         <servlet-name>test</servlet-name>
-        <servlet-class>com.jigsaw.tomcat.TestServlet</servlet-class>
+        <servlet-class>com.jigsaw.tomcat.Servlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
 

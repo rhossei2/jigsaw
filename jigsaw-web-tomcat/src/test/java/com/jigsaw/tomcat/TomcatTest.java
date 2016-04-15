@@ -2,6 +2,7 @@ package com.jigsaw.tomcat;
 
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.Tomcat;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -10,6 +11,7 @@ import java.io.File;
  * @author rhosseini
  * @date 4/13/2016
  */
+@Ignore
 public class TomcatTest {
 
     @Test

@@ -10,7 +10,7 @@ import java.io.IOException;
  * @author rhosseini
  * @date 4/14/2016
  */
-public class TestServlet extends HttpServlet {
+public class Servlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)

@@ -23,7 +23,7 @@
     </bean>
 
     <bean id="jigsaw" class="com.jigsaw.core.Jigsaw"
-          init-method="assemble" destroy-method="disAssemble">
+          init-method="assemble" destroy-method="dissssemble">
         <property name="pieceManager" ref="jigsawPieceManager"/>
     </bean>
 
