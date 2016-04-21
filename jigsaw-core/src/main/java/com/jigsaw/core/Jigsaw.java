@@ -7,6 +7,7 @@ import com.jigsaw.core.model.SimpleJigsawPiece;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,10 +42,23 @@ public class Jigsaw {
      * and removing them from the platform
      */
     public void dissssemble() {
+        //disconnect all the pieces first
+        List<String> pieces = new ArrayList<>();
         for (JigsawPiece piece : pieceManager.getPieces()) {
             if(piece.getDependants().isEmpty()) {
-                pieceManager.removePiece(piece);
+                pieceManager.disconnectPiece(piece);
+
+                invokeDisassemblyListeners(piece);
+
+                pieces.add(piece.getId());
             }
+        }
+
+        //remove all the pieces
+        for (String pieceId : pieces) {
+            JigsawPiece piece = getPieceManager().getPiece(pieceId);
+
+            pieceManager.removePiece(piece);
         }
     }
 
@@ -62,8 +76,6 @@ public class Jigsaw {
 
         invokeAssemblyListeners(piece);
 
-        pieceManager.persistPieces();
-
         return piece;
     }
 
@@ -78,6 +90,10 @@ public class Jigsaw {
     public JigsawPiece reassemble(String pieceId, String groupId, String artifactId, String version) {
         JigsawPiece oldPiece = pieceManager.getPiece(pieceId);
         if (oldPiece != null) {
+            pieceManager.disconnectPiece(oldPiece);
+
+            invokeDisassemblyListeners(oldPiece);
+
             pieceManager.removePiece(oldPiece);
         }
 
@@ -86,8 +102,6 @@ public class Jigsaw {
         pieceManager.connectPiece(newPiece);
 
         invokeAssemblyListeners(newPiece);
-
-        pieceManager.persistPieces();
 
         return newPiece;
     }
@@ -105,34 +119,26 @@ public class Jigsaw {
             return;
         }
 
+        pieceManager.disconnectPiece(piece);
+
         if(remove) {
             pieceManager.removePiece(piece);
-
-        } else {
-            pieceManager.disconnectPiece(piece);
         }
-
-        pieceManager.persistPieces();
     }
 
     protected void invokeAssemblyListeners(JigsawPiece jigsawPiece) {
-        //start with the dependencies
-        for(String dependencyId : jigsawPiece.getDependencies()) {
-            invokeAssemblyListeners(pieceManager.getPiece(dependencyId));
-        }
-
         for(JigsawPiece piece : pieceManager.getPieces()) {
             if(piece.getListener() != null && !piece.getId().equals(jigsawPiece.getId())) {
-                piece.getListener().setJigsaw(this);
+                piece.getListener().init(this);
                 piece.getListener().assembled(jigsawPiece);
             }
         }
     }
 
-    protected void invokeDisAssemblyListeners(JigsawPiece jigsawPiece) {
+    protected void invokeDisassemblyListeners(JigsawPiece jigsawPiece) {
         for(JigsawPiece piece : pieceManager.getPieces()) {
             if(piece.getListener() != null && !piece.getId().equals(jigsawPiece.getId())) {
-                piece.getListener().disAssembled(jigsawPiece);
+                piece.getListener().disassembled(jigsawPiece);
             }
         }
     }

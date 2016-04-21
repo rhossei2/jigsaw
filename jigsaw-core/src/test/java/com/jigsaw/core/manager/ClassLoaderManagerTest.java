@@ -1,8 +1,6 @@
-package com.jigsaw.manager;
+package com.jigsaw.core.manager;
 
 import com.jigsaw.core.model.JigsawPiece;
-import com.jigsaw.core.manager.ClassLoaderManager;
-import com.jigsaw.core.manager.JigsawPieceManager;
 import com.jigsaw.core.util.JarUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,6 +63,8 @@ public class ClassLoaderManagerTest {
         JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT");
 
         pieceManager.connectPiece(piece);
+
+        pieceManager.disconnectPiece(piece);
 
         pieceManager.removePiece(piece);
 

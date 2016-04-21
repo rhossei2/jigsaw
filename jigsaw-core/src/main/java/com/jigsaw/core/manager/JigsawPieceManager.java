@@ -39,10 +39,10 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manages all the jigsaw pieces and their state
+ *
  * @author Ramtin Hosseini
  */
 public class JigsawPieceManager {
@@ -57,7 +57,7 @@ public class JigsawPieceManager {
 
     private ResourceLoader resourceLoader;
 
-    private Map<String, JigsawPiece> pieces = new ConcurrentHashMap<String, JigsawPiece>();
+    private Map<String, JigsawPiece> pieces = new HashMap<>();
 
     private ClassLoaderManager classLoaderManager;
 
@@ -85,7 +85,7 @@ public class JigsawPieceManager {
         Reader reader = null;
         try {
             URL dbUrl = getClass().getResource(getDbFilePath());
-            if(dbUrl == null) {
+            if (dbUrl == null) {
                 log.warn("No db file found at " + getDbFilePath());
 
                 return new ArrayList();
@@ -105,7 +105,7 @@ public class JigsawPieceManager {
             log.error("Unable to read jigsaw pieces from db file", e);
         } finally {
             try {
-                if(reader != null) {
+                if (reader != null) {
                     reader.close();
                 }
 
@@ -129,7 +129,7 @@ public class JigsawPieceManager {
             log.error("Unable to write jigsaw pieces to db file", e);
         } finally {
             try {
-                if(writer != null) {
+                if (writer != null) {
                     writer.close();
                 }
 
@@ -188,7 +188,10 @@ public class JigsawPieceManager {
                 }
 
                 connectedPieces.add(jigsawPiece);
+
+                log.info("Connected piece " + jigsawPiece.getId());
             }
+
         } catch (Exception e) {
             throw new JigsawConnectException("Unable to connect the jigsaw piece", e);
         }
@@ -227,20 +230,19 @@ public class JigsawPieceManager {
 
                 if (jigsawPiece.getConnector() != null) {
                     jigsawPiece.getConnector().disconnect(jigsawPiece);
-                }
-            }
 
-            disconnectedPieces.add(jigsawPiece);
+                    disconnectedPieces.add(jigsawPiece);
+                }
+
+                log.info("Disconnected piece " + jigsawPiece.getId());
+            }
 
             for (String dependencyId : jigsawPiece.getDependencies()) {
                 JigsawPiece dependency = getPiece(dependencyId);
 
-                dependency.getDependants().remove(jigsawPiece.getId());
-                if (dependency.getDependants().isEmpty()) {
+                if (dependency.getDependants().size() == 1) {
                     disconnectInternal(dependency, disconnectedPieces);
                 }
-
-                disconnectInternal(dependency, disconnectedPieces);
             }
 
         } catch (Exception e) {
@@ -249,42 +251,40 @@ public class JigsawPieceManager {
     }
 
     /**
-     * Removes a given piece plus all dependencies that have no more
-     * dependents. <br/>
+     * - First, the piece itself is removed <br/>
+     * - Lastly, all dependencies that no longer have any dependents
+     * are removed
      *
      * @param jigsawPiece the piece to remove
      * @return all the pieces that have been removed
      * @throws JigsawDisconnectException pieces that still have dependants
      *                                   cannot be removed
      */
-    public Set<JigsawPiece> removePiece(JigsawPiece jigsawPiece) {
-        Set<JigsawPiece> disconnectedPieces = disconnectPiece(jigsawPiece);
-        for (JigsawPiece disconnectedPiece : disconnectedPieces) {
-            classLoaderManager.removeClassLoader((ClassLoaderManager.JigsawClassLoader) disconnectedPiece.getClassLoader());
-
-            pieces.remove(disconnectedPiece.getId());
+    public void removePiece(JigsawPiece jigsawPiece) {
+        if (!jigsawPiece.getDependants().isEmpty()) {
+            throw new JigsawDisconnectException("Cannot remove piece with dependant pieces");
         }
 
-        return disconnectedPieces;
-    }
-
-    /**
-     * - First, the old piece is removed <br/>
-     * - Second, the new piece and its new dependencies are added <br/>
-     *
-     * @param pieceId    the old piece id to replace
-     * @param groupId    new group id
-     * @param artifactId new artifact id
-     * @param version    new version
-     * @return the new piece
-     */
-    public JigsawPiece replacePiece(String pieceId, String groupId, String artifactId, String version) {
-        JigsawPiece oldPiece = getPiece(pieceId);
-        if (oldPiece != null) {
-            removePiece(oldPiece);
+        if (jigsawPiece.getStatus() == JigsawPieceStatus.CONNECTED) {
+            throw new JigsawDisconnectException("Cannot remove a piece that is still connected");
         }
 
-        return addPiece(groupId, artifactId, version);
+        classLoaderManager.removeClassLoader((ClassLoaderManager.JigsawClassLoader) jigsawPiece.getClassLoader());
+
+        pieces.remove(jigsawPiece.getId());
+
+        log.info("Removed piece " + jigsawPiece.getId());
+
+        for (String dependencyId : jigsawPiece.getDependencies()) {
+            JigsawPiece dependency = getPiece(dependencyId);
+
+            dependency.getDependants().remove(jigsawPiece.getId());
+
+            if (dependency.getDependants().isEmpty() &&
+                    dependency.getStatus() != JigsawPieceStatus.CONNECTED) {
+                removePiece(dependency);
+            }
+        }
     }
 
     /**
@@ -349,6 +349,8 @@ public class JigsawPieceManager {
 
         pieces.put(rootId, jigsawPiece);
 
+        log.info("Added piece " + jigsawPiece.getId());
+
         if (StringUtils.isNotEmpty(dependantId)) {
             jigsawPiece.getDependants().add(dependantId);
         }
@@ -376,7 +378,7 @@ public class JigsawPieceManager {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 
         URL localPath = getClass().getResource(localRepository);
-        if(localPath == null) {
+        if (localPath == null) {
             log.warn("Unable to find the local repository at " + localRepository);
 
             return session;
@@ -415,7 +417,7 @@ public class JigsawPieceManager {
     }
 
     protected String getDbFilePath() {
-        if(localRepository.endsWith("/")) {
+        if (localRepository.endsWith("/")) {
             return localRepository + DB_FILE;
         } else {
             return localRepository + "/" + DB_FILE;

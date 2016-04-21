@@ -21,10 +21,8 @@ public class MergeableBeanFactory extends DefaultListableBeanFactory {
 
     public MergeableBeanFactory() {}
 
-    public MergeableBeanFactory(MergeableApplicationContext... beanFactories) {
-        for(MergeableApplicationContext beanFactory : beanFactories) {
-            mergedBeanFactories.add(beanFactory);
-        }
+    public MergeableBeanFactory(List<MergeableApplicationContext> mergedBeanFactories) {
+        this.mergedBeanFactories = mergedBeanFactories;
     }
 
     @Override
@@ -56,7 +54,7 @@ public class MergeableBeanFactory extends DefaultListableBeanFactory {
         for(MergeableApplicationContext mergedBeanFactory : mergedBeanFactories) {
             if(mergedBeanFactory.containsBean(beanName)) {
                 //if the beans were originated from the same source, use the already existing merged bean
-                BeanDefinition mergedDefinition = mergedBeanFactory.getBeanDefinition(beanName);
+                BeanDefinition mergedDefinition = mergedBeanFactory.getBeanFactory().getBeanDefinition(beanName);
                 if(mergedDefinition.equals(localDefinition)) {
                     return mergedBeanFactory.getBean(beanName);
                 }

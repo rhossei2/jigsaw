@@ -1,6 +1,5 @@
-package com.jigsaw.manager;
+package com.jigsaw.core.manager;
 
-import com.jigsaw.core.manager.JigsawPieceManager;
 import com.jigsaw.core.model.JigsawPiece;
 import com.jigsaw.core.model.JigsawPieceStatus;
 import com.jigsaw.core.model.SimpleJigsawPiece;
@@ -49,6 +48,7 @@ public class JigsawPieceManagerTest {
     @Test
     public void testAddPiece() throws Exception {
         if(pieceManager.hasPiece(testId)) {
+            pieceManager.disconnectPiece(pieceManager.getPiece(testId));
             pieceManager.removePiece(pieceManager.getPiece(testId));
         }
 
@@ -64,6 +64,7 @@ public class JigsawPieceManagerTest {
     @Test
     public void testConnectPiece() throws Exception {
         if(pieceManager.hasPiece(testId)) {
+            pieceManager.disconnectPiece(pieceManager.getPiece(testId));
             pieceManager.removePiece(pieceManager.getPiece(testId));
         }
 
@@ -91,30 +92,18 @@ public class JigsawPieceManagerTest {
         Assert.assertTrue(pieces.contains(dependency));
         Assert.assertEquals(JigsawPieceStatus.DISCONNECTED, piece.getStatus());
         Assert.assertEquals(JigsawPieceStatus.DISCONNECTED, dependency.getStatus());
+
     }
 
     @Test
     public void testRemove() throws Exception {
         JigsawPiece piece = pieceManager.getPiece(testId);
 
+        pieceManager.disconnectPiece(piece);
+
         pieceManager.removePiece(piece);
 
         Assert.assertTrue(pieceManager.getPieces().isEmpty());
-    }
-
-    @Test
-    public void testReplacePiece() throws Exception {
-        JigsawPiece piece = pieceManager.getPiece(testId);
-
-        piece = pieceManager.replacePiece(piece.getId(), "com.jigsaw", "jigsaw-test", "1.0.1-SNAPSHOT");
-
-        pieceManager.connectPiece(piece);
-
-        String testChecksum = JarUtils.getChecksum(new File(this.getClass().getResource("/com/jigsaw/jigsaw-test/1.0.1-SNAPSHOT/jigsaw-test-1.0.1-SNAPSHOT.jar").getFile()));
-        String testId = "com.jigsaw:jigsaw-test:1.0.1-SNAPSHOT:" + testChecksum;
-
-        Assert.assertEquals(testId, piece.getId());
-        Assert.assertEquals(JigsawPieceStatus.CONNECTED, piece.getStatus());
     }
 
     @Test
