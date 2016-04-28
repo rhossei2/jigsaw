@@ -15,6 +15,10 @@ public class MainPrinter {
         parentPrinterTwo.print("Initializing...");
     }
 
+    public void sayHello() {
+        System.out.println("Hello world!");
+    }
+
     public void destroy() {
         System.out.println("Destroying main printer...");
     }

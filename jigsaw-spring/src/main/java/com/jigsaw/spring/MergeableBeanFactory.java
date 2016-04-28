@@ -19,8 +19,6 @@ public class MergeableBeanFactory extends DefaultListableBeanFactory {
 
     private List<MergeableApplicationContext> mergedBeanFactories = new ArrayList();
 
-    public MergeableBeanFactory() {}
-
     public MergeableBeanFactory(List<MergeableApplicationContext> mergedBeanFactories) {
         this.mergedBeanFactories = mergedBeanFactories;
     }
