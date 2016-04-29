@@ -10,8 +10,9 @@ public class JigsawBuilder {
     private ClassPathXmlApplicationContext applicationContext;
 
     public Jigsaw create() {
-        if(applicationContext != null) {
+        if(applicationContext == null) {
             applicationContext = new ClassPathXmlApplicationContext("/jigsaw-context.xml");
+            applicationContext.setClassLoader(this.getClass().getClassLoader());
         }
 
         return (Jigsaw) applicationContext.getBean("jigsaw");

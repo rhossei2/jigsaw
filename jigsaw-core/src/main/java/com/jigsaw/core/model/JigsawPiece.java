@@ -13,7 +13,7 @@ import java.util.Set;
 public class JigsawPiece extends SimpleJigsawPiece {
 
     @Expose(serialize = false)
-    private Properties properties;
+    private Properties properties = new Properties();
 
     @Expose(serialize = false)
     private JigsawListener listener;

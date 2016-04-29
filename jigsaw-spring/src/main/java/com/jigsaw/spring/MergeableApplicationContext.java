@@ -1,26 +1,12 @@
 package com.jigsaw.spring;
 
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * @author rhosseini
- * @date 4/18/2016
+ * @date 4/29/2016
  */
-public class MergeableApplicationContext extends ClassPathXmlApplicationContext {
+public interface MergeableApplicationContext extends ConfigurableApplicationContext {
 
-    private List<MergeableApplicationContext> mergedContext = new ArrayList<>();
-
-    public void merge(MergeableApplicationContext applicationContext) {
-        mergedContext.add(applicationContext);
-    }
-
-
-    @Override
-    protected DefaultListableBeanFactory createBeanFactory() {
-        return new MergeableBeanFactory(mergedContext);
-    }
+    void merge(MergeableApplicationContext context);
 }

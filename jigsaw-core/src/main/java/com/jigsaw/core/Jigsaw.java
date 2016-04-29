@@ -32,7 +32,7 @@ public class Jigsaw {
             if (dbPiece.getStatus() == JigsawPieceStatus.CONNECTED) {
                 pieceManager.connectPiece(piece);
 
-                invokeAssemblyListeners(piece);
+                notifyAssemblyListeners(piece);
             }
         }
     }
@@ -74,7 +74,7 @@ public class Jigsaw {
 
         pieceManager.connectPiece(piece);
 
-        invokeAssemblyListeners(piece);
+        notifyAssemblyListeners(piece);
 
         return piece;
     }
@@ -101,7 +101,7 @@ public class Jigsaw {
 
         pieceManager.connectPiece(newPiece);
 
-        invokeAssemblyListeners(newPiece);
+        notifyAssemblyListeners(newPiece);
 
         return newPiece;
     }
@@ -126,12 +126,22 @@ public class Jigsaw {
         }
     }
 
-    protected void invokeAssemblyListeners(JigsawPiece jigsawPiece) {
+    protected void notifyAssemblyListeners(JigsawPiece assembledPiece) {
         for(JigsawPiece piece : pieceManager.getPieces()) {
-            if(piece.getListener() != null && !piece.getId().equals(jigsawPiece.getId())) {
-                piece.getListener().init(this);
-                piece.getListener().assembled(jigsawPiece);
+            if (piece.getDependants().isEmpty()) {
+                notifyAssemblyListeners(piece, assembledPiece);
             }
+        }
+    }
+
+    protected void notifyAssemblyListeners(JigsawPiece piece, JigsawPiece assembledPiece) {
+        //notify dependencies first
+        for (String dependencyId : piece.getDependencies()) {
+            notifyAssemblyListeners(pieceManager.getPiece(dependencyId), assembledPiece);
+        }
+
+        if (piece.getListener() != null && !assembledPiece.getId().equals(piece.getId())) {
+            piece.getListener().assembled(assembledPiece);
         }
     }
 

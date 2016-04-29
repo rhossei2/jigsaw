@@ -29,8 +29,8 @@
 
     <modules>
         <module>jigsaw-core</module>
-		<module>jigsaw-web-tomcat</module>
 		<module>jigsaw-spring</module>
+		<module>jigsaw-spring-web</module>
     </modules>
 
 </project>

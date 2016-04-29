@@ -1,20 +1,19 @@
 package com.jigsaw.core;
 
-import com.jigsaw.core.manager.JigsawPieceManager;
 import com.jigsaw.core.model.JigsawPiece;
 
-import java.util.Collection;
-
+/**
+ * @author rhosseini
+ * @date 4/29/2016
+ */
 public class Test {
 
     public static void main(String[] args) throws Exception {
-        JigsawPieceManager assembler = new JigsawPieceManager();
-        assembler.setLocalRepository("C:\\Users\\RH\\.m2\\repository");
+        JigsawBuilder builder = new JigsawBuilder();
 
-        JigsawPiece piece = assembler.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT");
+        Jigsaw jigsaw = builder.create();
+        jigsaw.getPieceManager().setLocalRepository("C:/Users/rhosseini/.m2/repository");
 
-        assembler.connectPiece(piece);
-
-        Collection<JigsawPiece> installed = assembler.getPieces();
+        JigsawPiece piece = jigsaw.assemble("com.jigsaw", "jigsaw-spring-web", "1.0.0-SNAPSHOT");
     }
 }

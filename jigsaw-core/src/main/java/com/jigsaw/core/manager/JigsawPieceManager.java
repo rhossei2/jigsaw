@@ -151,6 +151,10 @@ public class JigsawPieceManager {
         return pieces.values();
     }
 
+    public Map<String, JigsawPiece> getPiecesMap() {
+        return pieces;
+    }
+
     /**
      * - First, all dependencies are connected<br/>
      * - Lastly, the piece itself is connected
@@ -230,9 +234,9 @@ public class JigsawPieceManager {
 
                 if (jigsawPiece.getConnector() != null) {
                     jigsawPiece.getConnector().disconnect(jigsawPiece);
-
-                    disconnectedPieces.add(jigsawPiece);
                 }
+
+                disconnectedPieces.add(jigsawPiece);
 
                 log.info("Disconnected piece " + jigsawPiece.getId());
             }
@@ -378,15 +382,16 @@ public class JigsawPieceManager {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 
         URL localPath = getClass().getResource(localRepository);
+        String path;
         if (localPath == null) {
-            log.warn("Unable to find the local repository at " + localRepository);
-
-            return session;
+            path = localRepository;
+        } else {
+            path = localPath.getFile();
         }
 
-        log.info("Setting local repository to " + localPath.getFile());
+        log.info("Setting local repository to " + path);
 
-        LocalRepository localRepo = new LocalRepository(localPath.getFile());
+        LocalRepository localRepo = new LocalRepository(path);
         session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
 
         return session;
