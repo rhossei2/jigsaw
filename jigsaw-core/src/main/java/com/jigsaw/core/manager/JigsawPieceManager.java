@@ -363,6 +363,7 @@ public class JigsawPieceManager {
             JigsawPiece dependency = addPiece(rootId, dependencyNode);
 
             jigsawPiece.getDependencies().add(dependency.getId());
+            jigsawPiece.getDependencies().addAll(dependency.getDependencies());
         }
 
         return jigsawPiece;

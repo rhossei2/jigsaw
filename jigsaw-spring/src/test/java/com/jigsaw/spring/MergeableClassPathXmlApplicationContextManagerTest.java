@@ -7,6 +7,8 @@ import com.jigsaw.core.model.JigsawPieceStatus;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Properties;
+
 /**
  * @author rhosseini
  * @date 4/29/2016
@@ -20,16 +22,19 @@ public class MergeableClassPathXmlApplicationContextManagerTest {
         jigsaw.setPieceManager(manager);
 
         JigsawPiece parentOne = new JigsawPiece();
+        parentOne.setProperties(new Properties());
         parentOne.getProperties().put(MergeableClassPathXmlApplicationContextManager.SPRING_LOCATION_PROP, "/parent-context-one.xml");
         parentOne.setId("parent-one");
         parentOne.setStatus(JigsawPieceStatus.CONNECTED);
 
         JigsawPiece parentTwo = new JigsawPiece();
+        parentTwo.setProperties(new Properties());
         parentTwo.getProperties().put(MergeableClassPathXmlApplicationContextManager.SPRING_LOCATION_PROP, "/parent-context-two.xml");
         parentTwo.setId("parent-two");
         parentTwo.setStatus(JigsawPieceStatus.CONNECTED);
 
         JigsawPiece main = new JigsawPiece();
+        main.setProperties(new Properties());
         main.getProperties().put(MergeableClassPathXmlApplicationContextManager.SPRING_LOCATION_PROP, "/main-context.xml");
         main.setId("main");
         main.setStatus(JigsawPieceStatus.CONNECTED);
@@ -57,16 +62,19 @@ public class MergeableClassPathXmlApplicationContextManagerTest {
         jigsaw.setPieceManager(manager);
 
         JigsawPiece parentOne = new JigsawPiece();
+        parentOne.setProperties(new Properties());
         parentOne.getProperties().put(MergeableClassPathXmlApplicationContextManager.SPRING_LOCATION_PROP, "/parent-context-one.xml");
         parentOne.setId("parent-one");
         parentOne.setStatus(JigsawPieceStatus.CONNECTED);
 
         JigsawPiece parentTwo = new JigsawPiece();
+        parentTwo.setProperties(new Properties());
         parentTwo.getProperties().put(MergeableClassPathXmlApplicationContextManager.SPRING_LOCATION_PROP, "/parent-context-two.xml");
         parentTwo.setId("parent-two");
         parentTwo.setStatus(JigsawPieceStatus.CONNECTED);
 
         JigsawPiece main = new JigsawPiece();
+        main.setProperties(new Properties());
         main.getProperties().put(MergeableClassPathXmlApplicationContextManager.SPRING_LOCATION_PROP, "/main-context.xml");
         main.setId("main");
         main.setStatus(JigsawPieceStatus.CONNECTED);

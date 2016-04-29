@@ -142,12 +142,11 @@ public class ClassLoaderManager {
         public Class<?> loadClass(String className) throws ClassNotFoundException {
             try {
                 return super.loadClass(className);
-            } catch (ClassNotFoundException e) {
-                ClassLoader classLoader =
-                        getClassLoader(className, jigsawPiece.getId());
 
+            } catch (ClassNotFoundException e) {
+                ClassLoader classLoader = getClassLoader(className, jigsawPiece.getId());
                 if (classLoader == null) {
-                    throw new ClassNotFoundException("Unable to find a JigsawClassLoader for class: " + className);
+                    throw new ClassNotFoundException(className + " is not visible to " + jigsawPiece.getId());
                 }
 
                 return classLoader.loadClass(className);
