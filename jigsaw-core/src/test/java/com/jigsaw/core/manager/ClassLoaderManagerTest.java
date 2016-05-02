@@ -47,13 +47,13 @@ public class ClassLoaderManagerTest {
         JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT");
 
         ClassLoaderManager.JigsawClassLoader classLoader = (ClassLoaderManager.JigsawClassLoader) pieceManager.getClassLoaderManager()
-                .getClassLoader("com.jigsawtestdependency.Printer", piece.getId());
+                .getClassLoader("com.jigsawtestdependency.Printer", piece);
 
         Assert.assertNotNull(classLoader);
         Assert.assertEquals(testDependencyId, classLoader.getJigsawPiece().getId());
 
         classLoader = (ClassLoaderManager.JigsawClassLoader) pieceManager.getClassLoaderManager()
-                .getClassLoader("com.jigsawtestdependency.Printer", "invalidId");
+                .getClassLoader("com.jigsawtestdependency.Printer", new JigsawPiece());
 
         Assert.assertNull(classLoader);
     }
@@ -69,8 +69,18 @@ public class ClassLoaderManagerTest {
         pieceManager.removePiece(piece);
 
         ClassLoaderManager.JigsawClassLoader classLoader = (ClassLoaderManager.JigsawClassLoader) pieceManager.getClassLoaderManager()
-                .getClassLoader("com.jigsawtestdependency.Printer", piece.getId());
+                .getClassLoader("com.jigsawtestdependency.Printer", piece);
 
         Assert.assertNull(classLoader);
+    }
+
+    @Test
+    public void testGetClassLoader() throws Exception {
+        JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT");
+
+        ClassLoaderManager.JigsawClassLoader classLoader = (ClassLoaderManager.JigsawClassLoader) pieceManager.getClassLoaderManager()
+                .getClassLoader("com.jigsawtestdependency.Printer", piece);
+
+        Assert.assertNotNull(classLoader);
     }
 }

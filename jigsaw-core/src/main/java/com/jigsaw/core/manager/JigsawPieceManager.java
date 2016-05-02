@@ -17,8 +17,8 @@ import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
-import org.eclipse.aether.collection.DependencyCollectionException;
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyNode;
@@ -63,13 +63,16 @@ public class JigsawPieceManager {
 
     private ArtifactToJigsawPieceConverter artifactToJigsawPieceConverter;
 
-    public void init() {
-        classLoaderManager.addResource("com.jigsaw.core", this.getClass().getClassLoader());
-        classLoaderManager.addResource("com.jigsaw.core.model", this.getClass().getClassLoader());
-        classLoaderManager.addResource("com.jigsaw.core.manager", this.getClass().getClassLoader());
-        classLoaderManager.addResource("com.jigsaw.core.util", this.getClass().getClassLoader());
-        classLoaderManager.addResource("com.jigsaw.core.converter", this.getClass().getClassLoader());
-        classLoaderManager.addResource("com.jigsaw.core.exception", this.getClass().getClassLoader());
+    public void init() throws NoSuchFieldException, IllegalAccessException {
+        classLoaderManager.addResource("com.jigsaw.core.model.JigsawPiece", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.core.manager.JigsawPieceManager", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.core.JigsawConnector", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.core.JigsawListener", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.core.Jigsaw", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.core.model.JigsawPieceStatus", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.core.exeption.JigsawDisconnectException", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.core.exeption.JigsawConnectException", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com.jigsaw.core.exeption.JigsawAssemblyException", this.getClass().getClassLoader());
     }
 
     public void destroy() {
@@ -307,7 +310,7 @@ public class JigsawPieceManager {
 
             RepositorySystemSession session = newSession(repoSystem);
 
-            Dependency dependency = new Dependency(new org.eclipse.aether.artifact.DefaultArtifact(groupId, artifactId, "jar", version), "compile");
+            Dependency dependency = new Dependency(new DefaultArtifact(groupId, artifactId, "jar", version), "compile");
 
             RemoteRepository central = new RemoteRepository.Builder("central", "default", "http://repo1.maven.org/maven2/").build();
 
@@ -322,48 +325,48 @@ public class JigsawPieceManager {
                 collectRequest.addRepository(repo);
             }
 
-            DependencyNode node = repoSystem.collectDependencies(session, collectRequest).getRoot();
-
             DependencyRequest dependencyRequest = new DependencyRequest();
-            dependencyRequest.setRoot(node);
+            dependencyRequest.setCollectRequest(collectRequest);
             dependencyRequest.setFilter(new ScopeDependencyFilter(new String[]{"provided", "test"}));
 
             DependencyResult dependencyResult = repoSystem.resolveDependencies(session, dependencyRequest);
 
             return addPiece(null, dependencyResult.getRoot());
 
-        } catch (DependencyCollectionException e) {
-            throw new JigsawAssemblyException("Unable to add a new JigsawPiece", e);
         } catch (DependencyResolutionException e) {
-            throw new JigsawAssemblyException("Unable to add a new JigsawPiece", e);
+            throw new JigsawAssemblyException("Unable to add a new Jigsaw Piece", e);
         }
     }
 
     protected JigsawPiece addPiece(String dependantId, DependencyNode root) {
         String rootId = JarUtils.generateId(root.getArtifact());
-        if (hasPiece(rootId)) {
-            return getPiece(rootId);
+
+        JigsawPiece jigsawPiece = getPiece(rootId);
+        if (jigsawPiece == null) {
+            jigsawPiece = artifactToJigsawPieceConverter.convert(root.getArtifact());
+
+            ClassLoaderManager.JigsawClassLoader classLoader = classLoaderManager.addClassLoader(jigsawPiece, null);
+
+            jigsawPiece.setClassLoader(classLoader);
+
+            pieces.put(rootId, jigsawPiece);
+
+            log.info("Added piece " + jigsawPiece.getId());
         }
 
-        JigsawPiece jigsawPiece = artifactToJigsawPieceConverter.convert(root.getArtifact());
-
-        ClassLoaderManager.JigsawClassLoader classLoader = classLoaderManager.addClassLoader(jigsawPiece, null);
-
-        jigsawPiece.setClassLoader(classLoader);
-
-        pieces.put(rootId, jigsawPiece);
-
-        log.info("Added piece " + jigsawPiece.getId());
-
         if (StringUtils.isNotEmpty(dependantId)) {
+            JigsawPiece dependant = getPiece(dependantId);
+
             jigsawPiece.getDependants().add(dependantId);
+            jigsawPiece.getDependants().addAll(dependant.getDependants());
         }
 
         for (DependencyNode dependencyNode : root.getChildren()) {
             JigsawPiece dependency = addPiece(rootId, dependencyNode);
 
             jigsawPiece.getDependencies().add(dependency.getId());
-            jigsawPiece.getDependencies().addAll(dependency.getDependencies());
+            jigsawPiece.getTransitiveDependencies().addAll(dependency.getDependencies());
+            jigsawPiece.getTransitiveDependencies().addAll(dependency.getTransitiveDependencies());
         }
 
         return jigsawPiece;

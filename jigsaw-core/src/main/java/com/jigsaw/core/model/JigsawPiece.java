@@ -27,11 +27,11 @@ public class JigsawPiece extends SimpleJigsawPiece {
     @Expose(serialize = false)
     private File file;
 
-    @Expose(serialize = false)
     private Set<String> dependants = new HashSet<String>();
 
-    @Expose(serialize = false)
     private Set<String> dependencies = new HashSet<String>();
+
+    private Set<String> transitiveDependencies = new HashSet<>();
 
     public ClassLoader getClassLoader() {
         return classLoader;
@@ -87,5 +87,13 @@ public class JigsawPiece extends SimpleJigsawPiece {
 
     public void setFile(File file) {
         this.file = file;
+    }
+
+    public Set<String> getTransitiveDependencies() {
+        return transitiveDependencies;
+    }
+
+    public void setTransitiveDependencies(Set<String> transitiveDependencies) {
+        this.transitiveDependencies = transitiveDependencies;
     }
 }

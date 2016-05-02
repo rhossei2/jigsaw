@@ -24,7 +24,7 @@ public class JarUtils {
     }
 
     public static String getPackageName(String className) {
-        String[] array = className.replace(".class", "").replace("/", ".").split("\\.");
+        String[] array = getClassName(className).split("\\.");
 
         String packageName = "";
         for (int i = 0; i < array.length - 1; i++) {
@@ -35,6 +35,10 @@ public class JarUtils {
         }
 
         return packageName;
+    }
+
+    public static String getClassName(String resourceName) {
+        return resourceName.replace(".class", "").replace("/", ".");
     }
 
     public static boolean isClass(JarEntry jarEntry) {

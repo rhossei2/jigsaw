@@ -13,7 +13,7 @@ import java.util.jar.JarFile;
 
 public class JigsawJar extends JarFile {
 
-    private List<String> packageNames = new ArrayList<String>();
+    private List<String> classNames = new ArrayList<String>();
 
     private List<String> resourceNames = new ArrayList<String>();
 
@@ -40,19 +40,19 @@ public class JigsawJar extends JarFile {
 
             String resourceName = jarEntry.getName();
             if (JarUtils.isClass(jarEntry)) {
-                packageNames.add(JarUtils.getPackageName(resourceName));
+                classNames.add(JarUtils.getClassName(resourceName));
             } else if (JarUtils.isResource(jarEntry)) {
-                resourceNames.add("/" + resourceName);
+                resourceNames.add(resourceName);
             }
         }
     }
 
-    public List<String> getPackageNames() {
-        return packageNames;
+    public List<String> getClassNames() {
+        return classNames;
     }
 
-    public void setPackageNames(List<String> packageNames) {
-        this.packageNames = packageNames;
+    public void setClassNames(List<String> classNames) {
+        this.classNames = classNames;
     }
 
     public List<String> getResourceNames() {

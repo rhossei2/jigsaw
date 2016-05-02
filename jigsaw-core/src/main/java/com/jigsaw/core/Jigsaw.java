@@ -141,6 +141,7 @@ public class Jigsaw {
         }
 
         if (piece.getListener() != null && !assembledPiece.getId().equals(piece.getId())) {
+            piece.getListener().init(this);
             piece.getListener().assembled(assembledPiece);
         }
     }
