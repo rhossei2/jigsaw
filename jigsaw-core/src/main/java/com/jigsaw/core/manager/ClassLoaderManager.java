@@ -1,8 +1,8 @@
 package com.jigsaw.core.manager;
 
 import com.jigsaw.core.exeption.JigsawAssemblyException;
-import com.jigsaw.core.model.JigsawJar;
 import com.jigsaw.core.model.JigsawPiece;
+import com.jigsaw.core.util.JarUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +11,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 
 public class ClassLoaderManager {
@@ -20,17 +22,19 @@ public class ClassLoaderManager {
     private Map<String, Set<java.lang.ClassLoader>> moduleClasses = new HashMap<String, Set<java.lang.ClassLoader>>();
 
     public JigsawClassLoader addClassLoader(JigsawPiece jigsawPiece, ClassLoader parentClassLoader) {
-        JigsawJar jar = null;
+        JarFile jar = null;
         try {
             JigsawClassLoader classLoader =
                     new JigsawClassLoader(jigsawPiece, parentClassLoader);
 
-            jar = new JigsawJar(classLoader.getJigsawPiece().getFile(), true);
-            for (String className : jar.getClassNames()) {
-                addResource(className, classLoader);
-            }
+            jar = new JarFile(classLoader.getJigsawPiece().getFile(), true);
 
-            for (String resourceName : jar.getResourceNames()) {
+            Enumeration<JarEntry> entries = jar.entries();
+            while (entries.hasMoreElements()) {
+                JarEntry jarEntry = entries.nextElement();
+
+                String resourceName = jarEntry.getName();
+
                 addResource(resourceName, classLoader);
             }
 
@@ -51,15 +55,16 @@ public class ClassLoaderManager {
     }
 
     public void removeClassLoader(JigsawClassLoader classLoader) {
-        JigsawJar jar = null;
+        JarFile jar = null;
         try {
-            jar = new JigsawJar(classLoader.getJigsawPiece().getFile(), true);
+            jar = new JarFile(classLoader.getJigsawPiece().getFile(), true);
 
-            for (String className : jar.getClassNames()) {
-                removeResource(className, classLoader);
-            }
+            Enumeration<JarEntry> entries = jar.entries();
+            while (entries.hasMoreElements()) {
+                JarEntry jarEntry = entries.nextElement();
 
-            for (String resourceName : jar.getResourceNames()) {
+                String resourceName = jarEntry.getName();
+
                 removeResource(resourceName, classLoader);
             }
 
@@ -164,7 +169,9 @@ public class ClassLoaderManager {
                 return super.loadClass(className);
 
             } catch (ClassNotFoundException e) {
-                ClassLoader classLoader = getClassLoader(className, jigsawPiece);
+                String resourceName = JarUtils.getResourceName(className);
+
+                ClassLoader classLoader = getClassLoader(resourceName, jigsawPiece);
                 if (classLoader == null) {
                     throw new ClassNotFoundException(className + " is not available to " + jigsawPiece.getId());
                 }
@@ -175,7 +182,6 @@ public class ClassLoaderManager {
 
         @Override
         public URL getResource(String name) {
-            log.info("Getting resource " + name);
             URL url = super.getResource(name);
             if (url == null) {
                 ClassLoader classLoader = getClassLoader(name, jigsawPiece);
@@ -189,8 +195,6 @@ public class ClassLoaderManager {
 
         @Override
         public Enumeration<URL> getResources(String name) throws IOException {
-            log.info("Getting resource " + name);
-
             List<URL> resources = new ArrayList<>();
 
             Enumeration<URL> urls = super.getResources(name);

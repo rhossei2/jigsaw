@@ -1,5 +1,6 @@
 package com.jigsaw.spring;
 
+import com.jigsaw.core.Jigsaw;
 import com.jigsaw.core.model.JigsawPiece;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,12 +9,12 @@ import org.slf4j.LoggerFactory;
  * @author rhosseini
  * @date 4/28/2016
  */
-public class MergeableClassPathXmlApplicationContextManager
-        extends AbstractApplicationContextManager {
+public class MergeableClassPathXmlApplicationContextLoader
+        extends ApplicationContextLoader {
 
     public static final String SPRING_LOCATION_PROP = "jigsaw.spring.location";
 
-    private static final Logger log = LoggerFactory.getLogger(MergeableClassPathXmlApplicationContextManager.class);
+    private static final Logger log = LoggerFactory.getLogger(MergeableClassPathXmlApplicationContextLoader.class);
 
     @Override
     protected MergeableApplicationContext loadApplicationContext(JigsawPiece piece) {
@@ -31,4 +32,8 @@ public class MergeableClassPathXmlApplicationContextManager
         return context;
     }
 
+    @Override
+    public boolean canSupport(Jigsaw jigsaw, JigsawPiece piece) {
+        return piece.getProperties().containsKey(SPRING_LOCATION_PROP);
+    }
 }

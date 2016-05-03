@@ -6,41 +6,32 @@ import com.jigsaw.core.model.JigsawPieceStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author rhosseini
  * @date 4/29/2016
  */
-public abstract class AbstractApplicationContextManager {
+public class ApplicationContextManager {
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractApplicationContextManager.class);
+    private static final Logger log = LoggerFactory.getLogger(ApplicationContextManager.class);
 
-    private Map<String, MergeableApplicationContext> contexts = new HashMap<>();
+    protected Map<String, MergeableApplicationContext> contexts = new HashMap<>();
 
-    private AbstractApplicationContextManager parentApplicationContextManager;
-
-    public AbstractApplicationContextManager() {}
-
-    public AbstractApplicationContextManager(AbstractApplicationContextManager parentApplicationContextManager) {
-        this.parentApplicationContextManager = parentApplicationContextManager;
-    }
+    private Set<ApplicationContextLoader> applicationContextLoaders = new HashSet<>();
 
     public MergeableApplicationContext addApplicationContext(Jigsaw jigsaw, JigsawPiece piece) {
-        if (parentApplicationContextManager != null) {
-            if (parentApplicationContextManager.getContexts().containsKey(piece.getId())) {
-                return parentApplicationContextManager.getContexts().get(piece.getId());
-            }
-        }
-
         if (contexts.containsKey(piece.getId())) {
             return contexts.get(piece.getId());
         }
 
         MergeableApplicationContext context = null;
         if (piece.getStatus() == JigsawPieceStatus.CONNECTED) {
-            context = loadApplicationContext(piece);
+            for (ApplicationContextLoader contextLoader : applicationContextLoaders) {
+                if (contextLoader.canSupport(jigsaw, piece)) {
+                    context = contextLoader.loadApplicationContext(piece);
+                }
+            }
         }
 
         for(String dependencyId : piece.getDependencies()) {
@@ -59,7 +50,7 @@ public abstract class AbstractApplicationContextManager {
         if (context != null) {
             log.info("Refreshing applicationContext for " + piece.getId());
 
-            refresh(context);
+            context.refresh();
 
             contexts.put(piece.getId(), context);
         }
@@ -78,7 +69,7 @@ public abstract class AbstractApplicationContextManager {
         if (context != null) {
             log.info("Closing applicationContext for " + piece.getId());
 
-            close(context);
+            context.close();
 
             contexts.remove(piece.getId());
         }
@@ -89,17 +80,11 @@ public abstract class AbstractApplicationContextManager {
         }
     }
 
-    protected abstract MergeableApplicationContext loadApplicationContext(JigsawPiece piece);
-
-    protected void refresh(MergeableApplicationContext context) {
-        context.refresh();
-    }
-
-    protected void close(MergeableApplicationContext context) {
-        context.close();
-    }
-
     public Map<String, MergeableApplicationContext> getContexts() {
         return contexts;
+    }
+
+    public Set<ApplicationContextLoader> getApplicationContextLoaders() {
+        return applicationContextLoaders;
     }
 }

@@ -31,8 +31,6 @@ public class JigsawPiece extends SimpleJigsawPiece {
 
     private Set<String> dependencies = new HashSet<String>();
 
-    private Set<String> transitiveDependencies = new HashSet<>();
-
     public ClassLoader getClassLoader() {
         return classLoader;
     }
@@ -87,13 +85,5 @@ public class JigsawPiece extends SimpleJigsawPiece {
 
     public void setFile(File file) {
         this.file = file;
-    }
-
-    public Set<String> getTransitiveDependencies() {
-        return transitiveDependencies;
-    }
-
-    public void setTransitiveDependencies(Set<String> transitiveDependencies) {
-        this.transitiveDependencies = transitiveDependencies;
     }
 }

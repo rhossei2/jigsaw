@@ -1,11 +1,11 @@
 package com.jigsaw.spring.web;
 
+import com.jigsaw.core.Jigsaw;
 import com.jigsaw.core.model.JigsawPiece;
-import com.jigsaw.spring.AbstractApplicationContextManager;
+import com.jigsaw.spring.ApplicationContextLoader;
 import com.jigsaw.spring.MergeableApplicationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
 
@@ -14,7 +14,7 @@ import javax.servlet.ServletContext;
  * @date 4/29/2016
  */
 public class MergeableXmlWebApplicationContextManager
-    extends AbstractApplicationContextManager {
+    extends ApplicationContextLoader {
 
     public static final String SPRING_WEB_ENABLED = "jigsaw.spring.web.enabled";
 
@@ -22,9 +22,7 @@ public class MergeableXmlWebApplicationContextManager
 
     private ServletContext servletContext;
 
-    public MergeableXmlWebApplicationContextManager(AbstractApplicationContextManager parent,
-                                                    ServletContext servletContext) {
-        super(parent);
+    public MergeableXmlWebApplicationContextManager(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
 
@@ -56,10 +54,7 @@ public class MergeableXmlWebApplicationContextManager
     }
 
     @Override
-    protected void refresh(MergeableApplicationContext context) {
-        context.refresh();
-
-        //set the context as an attribute so Spring servletDispatcher can reference it
-        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, context);
+    public boolean canSupport(Jigsaw jigsaw, JigsawPiece piece) {
+        return piece.getProperties().containsKey(SPRING_WEB_ENABLED);
     }
 }

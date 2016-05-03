@@ -1,5 +1,6 @@
 package com.jigsaw.spring;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -17,6 +18,17 @@ public class MergeableClassPathXmlApplicationContext extends ClassPathXmlApplica
 
     public void merge(MergeableApplicationContext applicationContext) {
         mergedContext.add(applicationContext);
+    }
+
+    @Override
+    public void refresh() throws BeansException, IllegalStateException {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+        Thread.currentThread().setContextClassLoader(getClassLoader());
+
+        super.refresh();
+
+        Thread.currentThread().setContextClassLoader(classLoader);
     }
 
     @Override

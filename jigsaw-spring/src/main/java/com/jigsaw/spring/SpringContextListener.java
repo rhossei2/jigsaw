@@ -17,8 +17,8 @@ public class SpringContextListener extends JigsawListener {
     public void assembled(JigsawPiece piece) {
         log.info("Loading application context for piece " + piece.getId());
 
-        MergeableClassPathXmlApplicationContextManager springManager =
-                MergeableClassPathXmlApplicationContextManagerFactory.getInstance();
+        ApplicationContextManager springManager =
+                ApplicationContextManagerFactory.getInstance();
 
         springManager.addApplicationContext(getJigsaw(), piece);
     }
@@ -27,8 +27,8 @@ public class SpringContextListener extends JigsawListener {
     public void disassembled(JigsawPiece piece) {
         log.info("Removing application context for piece " + piece.getId());
 
-        MergeableClassPathXmlApplicationContextManager springManager =
-                MergeableClassPathXmlApplicationContextManagerFactory.getInstance();
+        ApplicationContextManager springManager =
+                ApplicationContextManagerFactory.getInstance();
 
         springManager.removeApplicationContext(getJigsaw(), piece);
     }

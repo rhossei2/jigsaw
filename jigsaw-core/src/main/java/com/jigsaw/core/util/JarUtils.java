@@ -41,6 +41,10 @@ public class JarUtils {
         return resourceName.replace(".class", "").replace("/", ".");
     }
 
+    public static String getResourceName(String className) {
+        return className.replace(".", "/") + ".class";
+    }
+
     public static boolean isClass(JarEntry jarEntry) {
         if (jarEntry.getName().endsWith(".class")) {
             return true;

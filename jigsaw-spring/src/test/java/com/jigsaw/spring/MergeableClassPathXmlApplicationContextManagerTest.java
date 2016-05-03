@@ -4,7 +4,9 @@ import com.jigsaw.core.Jigsaw;
 import com.jigsaw.core.manager.JigsawPieceManager;
 import com.jigsaw.core.model.JigsawPiece;
 import com.jigsaw.core.model.JigsawPieceStatus;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -15,6 +17,21 @@ import java.util.Properties;
  */
 public class MergeableClassPathXmlApplicationContextManagerTest {
 
+    private MergeableClassPathXmlApplicationContextLoader loader =
+            new MergeableClassPathXmlApplicationContextLoader();
+
+    @Before
+    public void before() throws Exception {
+        ApplicationContextManagerFactory.getInstance()
+                .getApplicationContextLoaders().add(loader);
+    }
+
+    @After
+    public void after() throws Exception {
+        ApplicationContextManagerFactory.getInstance()
+                .getApplicationContextLoaders().remove(loader);
+    }
+
     @Test
     public void testAddApplicationContext() throws Exception {
         JigsawPieceManager manager = new JigsawPieceManager();
@@ -23,19 +40,19 @@ public class MergeableClassPathXmlApplicationContextManagerTest {
 
         JigsawPiece parentOne = new JigsawPiece();
         parentOne.setProperties(new Properties());
-        parentOne.getProperties().put(MergeableClassPathXmlApplicationContextManager.SPRING_LOCATION_PROP, "/parent-context-one.xml");
+        parentOne.getProperties().put(MergeableClassPathXmlApplicationContextLoader.SPRING_LOCATION_PROP, "/parent-context-one.xml");
         parentOne.setId("parent-one");
         parentOne.setStatus(JigsawPieceStatus.CONNECTED);
 
         JigsawPiece parentTwo = new JigsawPiece();
         parentTwo.setProperties(new Properties());
-        parentTwo.getProperties().put(MergeableClassPathXmlApplicationContextManager.SPRING_LOCATION_PROP, "/parent-context-two.xml");
+        parentTwo.getProperties().put(MergeableClassPathXmlApplicationContextLoader.SPRING_LOCATION_PROP, "/parent-context-two.xml");
         parentTwo.setId("parent-two");
         parentTwo.setStatus(JigsawPieceStatus.CONNECTED);
 
         JigsawPiece main = new JigsawPiece();
         main.setProperties(new Properties());
-        main.getProperties().put(MergeableClassPathXmlApplicationContextManager.SPRING_LOCATION_PROP, "/main-context.xml");
+        main.getProperties().put(MergeableClassPathXmlApplicationContextLoader.SPRING_LOCATION_PROP, "/main-context.xml");
         main.setId("main");
         main.setStatus(JigsawPieceStatus.CONNECTED);
 
@@ -46,8 +63,7 @@ public class MergeableClassPathXmlApplicationContextManagerTest {
         manager.getPiecesMap().put(parentOne.getId(), parentOne);
         manager.getPiecesMap().put(parentTwo.getId(), parentTwo);
 
-        MergeableClassPathXmlApplicationContextManager springManager =
-                new MergeableClassPathXmlApplicationContextManager();
+        ApplicationContextManager springManager = ApplicationContextManagerFactory.getInstance();
 
         MergeableApplicationContext context = springManager.addApplicationContext(jigsaw, main);
 
@@ -63,19 +79,19 @@ public class MergeableClassPathXmlApplicationContextManagerTest {
 
         JigsawPiece parentOne = new JigsawPiece();
         parentOne.setProperties(new Properties());
-        parentOne.getProperties().put(MergeableClassPathXmlApplicationContextManager.SPRING_LOCATION_PROP, "/parent-context-one.xml");
+        parentOne.getProperties().put(MergeableClassPathXmlApplicationContextLoader.SPRING_LOCATION_PROP, "/parent-context-one.xml");
         parentOne.setId("parent-one");
         parentOne.setStatus(JigsawPieceStatus.CONNECTED);
 
         JigsawPiece parentTwo = new JigsawPiece();
         parentTwo.setProperties(new Properties());
-        parentTwo.getProperties().put(MergeableClassPathXmlApplicationContextManager.SPRING_LOCATION_PROP, "/parent-context-two.xml");
+        parentTwo.getProperties().put(MergeableClassPathXmlApplicationContextLoader.SPRING_LOCATION_PROP, "/parent-context-two.xml");
         parentTwo.setId("parent-two");
         parentTwo.setStatus(JigsawPieceStatus.CONNECTED);
 
         JigsawPiece main = new JigsawPiece();
         main.setProperties(new Properties());
-        main.getProperties().put(MergeableClassPathXmlApplicationContextManager.SPRING_LOCATION_PROP, "/main-context.xml");
+        main.getProperties().put(MergeableClassPathXmlApplicationContextLoader.SPRING_LOCATION_PROP, "/main-context.xml");
         main.setId("main");
         main.setStatus(JigsawPieceStatus.CONNECTED);
 
@@ -86,8 +102,7 @@ public class MergeableClassPathXmlApplicationContextManagerTest {
         manager.getPiecesMap().put(parentOne.getId(), parentOne);
         manager.getPiecesMap().put(parentTwo.getId(), parentTwo);
 
-        MergeableClassPathXmlApplicationContextManager springManager =
-                new MergeableClassPathXmlApplicationContextManager();
+        ApplicationContextManager springManager = ApplicationContextManagerFactory.getInstance();
 
         MergeableApplicationContext context = springManager.addApplicationContext(jigsaw, main);
 

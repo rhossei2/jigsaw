@@ -64,15 +64,15 @@ public class JigsawPieceManager {
     private ArtifactToJigsawPieceConverter artifactToJigsawPieceConverter;
 
     public void init() throws NoSuchFieldException, IllegalAccessException {
-        classLoaderManager.addResource("com.jigsaw.core.model.JigsawPiece", this.getClass().getClassLoader());
-        classLoaderManager.addResource("com.jigsaw.core.manager.JigsawPieceManager", this.getClass().getClassLoader());
-        classLoaderManager.addResource("com.jigsaw.core.JigsawConnector", this.getClass().getClassLoader());
-        classLoaderManager.addResource("com.jigsaw.core.JigsawListener", this.getClass().getClassLoader());
-        classLoaderManager.addResource("com.jigsaw.core.Jigsaw", this.getClass().getClassLoader());
-        classLoaderManager.addResource("com.jigsaw.core.model.JigsawPieceStatus", this.getClass().getClassLoader());
-        classLoaderManager.addResource("com.jigsaw.core.exeption.JigsawDisconnectException", this.getClass().getClassLoader());
-        classLoaderManager.addResource("com.jigsaw.core.exeption.JigsawConnectException", this.getClass().getClassLoader());
-        classLoaderManager.addResource("com.jigsaw.core.exeption.JigsawAssemblyException", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com/jigsaw/core/model/JigsawPiece.class", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com/jigsaw/core/manager/JigsawPieceManager.class", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com/jigsaw/core/JigsawConnector.class", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com/jigsaw/core/JigsawListener.class", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com/jigsaw/core/Jigsaw.class", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com/jigsaw/core/model/JigsawPieceStatus.class", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com/jigsaw/core/exeption/JigsawDisconnectException.class", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com/jigsaw/core/exeption/JigsawConnectException.class", this.getClass().getClassLoader());
+        classLoaderManager.addResource("com/jigsaw/core/exeption/JigsawAssemblyException.class", this.getClass().getClassLoader());
     }
 
     public void destroy() {
@@ -365,8 +365,6 @@ public class JigsawPieceManager {
             JigsawPiece dependency = addPiece(rootId, dependencyNode);
 
             jigsawPiece.getDependencies().add(dependency.getId());
-            jigsawPiece.getTransitiveDependencies().addAll(dependency.getDependencies());
-            jigsawPiece.getTransitiveDependencies().addAll(dependency.getTransitiveDependencies());
         }
 
         return jigsawPiece;

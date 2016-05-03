@@ -1,13 +1,17 @@
 package com.jigsaw.spring;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * @author rhosseini
  * @date 4/18/2016
  */
 public class MainPrinter {
 
+    @Autowired
     private ParentPrinterOne parentPrinterOne;
 
+    @Autowired
     private ParentPrinterTwo parentPrinterTwo;
 
     public void init() {

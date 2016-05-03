@@ -2,7 +2,6 @@ package com.jigsaw.spring.web;
 
 import com.jigsaw.core.Jigsaw;
 import com.jigsaw.core.model.JigsawPiece;
-import com.jigsaw.spring.MergeableClassPathXmlApplicationContextManagerFactory;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
@@ -26,10 +25,10 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext servletContext) throws ServletException {
-        MergeableXmlWebApplicationContextManager manager = new MergeableXmlWebApplicationContextManager(
-                        MergeableClassPathXmlApplicationContextManagerFactory.getInstance(),
+/*        MergeableXmlWebApplicationContextManager manager = new MergeableXmlWebApplicationContextManager(
+                        ApplicationContextManagerFactory.getInstance(),
                         servletContext);
 
-        manager.addApplicationContext(jigsaw, piece);
+        manager.addApplicationContext(jigsaw, piece);*/
     }
 }
