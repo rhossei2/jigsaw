@@ -164,9 +164,9 @@ public class ClassLoaderManager {
         }
 
         @Override
-        public Class<?> loadClass(String className) throws ClassNotFoundException {
+        protected Class<?> loadClass(String className, boolean resolve) throws ClassNotFoundException {
             try {
-                return super.loadClass(className);
+                return super.loadClass(className, resolve);
 
             } catch (ClassNotFoundException e) {
                 String resourceName = JarUtils.getResourceName(className);
@@ -176,7 +176,13 @@ public class ClassLoaderManager {
                     throw new ClassNotFoundException(className + " is not available to " + jigsawPiece.getId());
                 }
 
-                return classLoader.loadClass(className);
+                Class clazz = classLoader.loadClass(className);
+
+                if (resolve) {
+                    resolveClass(clazz);
+                }
+
+                return clazz;
             }
         }
 
