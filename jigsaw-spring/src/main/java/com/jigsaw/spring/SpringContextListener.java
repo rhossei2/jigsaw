@@ -15,8 +15,6 @@ public class SpringContextListener extends JigsawListener {
 
     @Override
     public void assembled(JigsawPiece piece) {
-        log.info("Loading application context for piece " + piece.getId());
-
         ApplicationContextManager springManager =
                 ApplicationContextManagerFactory.getInstance();
 
@@ -25,8 +23,6 @@ public class SpringContextListener extends JigsawListener {
 
     @Override
     public void disassembled(JigsawPiece piece) {
-        log.info("Removing application context for piece " + piece.getId());
-
         ApplicationContextManager springManager =
                 ApplicationContextManagerFactory.getInstance();
 

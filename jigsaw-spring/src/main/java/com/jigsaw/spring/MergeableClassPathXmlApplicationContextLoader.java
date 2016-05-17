@@ -18,11 +18,14 @@ public class MergeableClassPathXmlApplicationContextLoader
 
     @Override
     protected MergeableApplicationContext loadApplicationContext(JigsawPiece piece) {
+        log.info("Creating application context for " + piece.getId());
+
         MergeableClassPathXmlApplicationContext context = null;
         if (piece.getProperties().containsKey(SPRING_LOCATION_PROP)) {
-            String[] springLocations = piece.getProperties().getProperty(SPRING_LOCATION_PROP).split(",");
+            String locationProperty = piece.getProperties().getProperty(SPRING_LOCATION_PROP);
+            String[] springLocations = locationProperty.split(",");
 
-            log.info("Loading Spring files at " + springLocations + " for piece " + piece.getId());
+            log.info("Loading Spring files at " + locationProperty + " for piece " + piece.getId());
 
             context = new MergeableClassPathXmlApplicationContext();
             context.setConfigLocations(springLocations);
