@@ -17,6 +17,7 @@ public class ArtifactToJigsawPieceConverter implements Converter<Artifact, Jigsa
         jigsawPiece.setGroupId(artifact.getGroupId());
         jigsawPiece.setVersion(artifact.getVersion());
         jigsawPiece.setFile(artifact.getFile());
+        jigsawPiece.setExtension(artifact.getExtension());
 
         return jigsawPiece;
     }

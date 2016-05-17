@@ -11,10 +11,8 @@ import java.util.Properties;
 
 public abstract class AbstractResourceLoader
         implements ResourceLoader {
-    private static final String JIGSAW_PROPERTIES = "jigsaw.properties";
 
-    public AbstractResourceLoader() {
-    }
+    private static final String JIGSAW_PROPERTIES = "jigsaw.properties";
 
     private static final Logger log = LoggerFactory.getLogger(AbstractResourceLoader.class);
 
@@ -31,21 +29,22 @@ public abstract class AbstractResourceLoader
             return;
         }
 
-        InputStream inputStream = piece.getClassLoader().getResourceAsStream("jigsaw.properties");
+        InputStream inputStream = piece.getClassLoader().getResourceAsStream(JIGSAW_PROPERTIES);
         try {
             Properties properties = new Properties();
-            if (inputStream == null) {
-                log.info("No jigsaw.properties found in " + piece.getId());
-
-            } else {
+            if (inputStream != null) {
                 properties.load(inputStream);
+
+                log.info(JIGSAW_PROPERTIES + " loaded for " + piece.getId());
             }
 
             piece.setProperties(properties);
 
             return;
+
         } catch (IOException e) {
             throw new JigsawAssemblyException("Unable to load properties from JigsawPiece", e);
+
         } finally {
             if (inputStream != null) {
                 try {

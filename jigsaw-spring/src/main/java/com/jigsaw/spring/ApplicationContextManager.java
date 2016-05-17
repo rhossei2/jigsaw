@@ -18,7 +18,7 @@ public class ApplicationContextManager {
 
     protected Map<String, MergeableApplicationContext> contexts = new HashMap<>();
 
-    private Set<ApplicationContextLoader> applicationContextLoaders = new HashSet<>();
+    private Set<AbstractApplicationContextLoader> applicationContextLoaders = new HashSet<>();
 
     public MergeableApplicationContext addApplicationContext(Jigsaw jigsaw, JigsawPiece piece) {
         if (contexts.containsKey(piece.getId())) {
@@ -27,11 +27,15 @@ public class ApplicationContextManager {
 
         MergeableApplicationContext context = null;
         if (piece.getStatus() == JigsawPieceStatus.CONNECTED) {
-            for (ApplicationContextLoader contextLoader : applicationContextLoaders) {
+            for (AbstractApplicationContextLoader contextLoader : applicationContextLoaders) {
                 if (contextLoader.canSupport(jigsaw, piece)) {
                     context = contextLoader.loadApplicationContext(piece);
                 }
             }
+        }
+
+        if (context == null) {
+            return null;
         }
 
         for(String dependencyId : piece.getDependencies()) {
@@ -39,21 +43,17 @@ public class ApplicationContextManager {
                     jigsaw.getPieceManager().getPiece(dependencyId));
 
             if (dependencyContext != null) {
-                if (context != null) {
-                    context.merge(dependencyContext);
-                }
-
-                contexts.put(dependencyId, dependencyContext);
+                context.merge(dependencyContext);
             }
         }
 
-        if (context != null) {
-            log.info("Refreshing applicationContext for " + piece.getId());
+        log.info("Refreshing applicationContext for " + piece.getId());
 
-            context.refresh();
+        context.refresh();
 
-            contexts.put(piece.getId(), context);
-        }
+        log.info("Successfully refreshed application context for " + piece.getId());
+
+        contexts.put(piece.getId(), context);
 
         return context;
     }
@@ -84,7 +84,7 @@ public class ApplicationContextManager {
         return contexts;
     }
 
-    public Set<ApplicationContextLoader> getApplicationContextLoaders() {
+    public Set<AbstractApplicationContextLoader> getApplicationContextLoaders() {
         return applicationContextLoaders;
     }
 }

@@ -1,42 +1,33 @@
 package com.jigsaw.spring;
 
-import com.jigsaw.core.Jigsaw;
 import com.jigsaw.core.model.JigsawPiece;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
 
 /**
  * @author rhosseini
  * @date 4/28/2016
  */
 public class MergeableClassPathXmlApplicationContextLoader
-        extends ApplicationContextLoader {
-
-    public static final String SPRING_LOCATION_PROP = "jigsaw.spring.location";
+        extends AbstractApplicationContextLoader {
 
     private static final Logger log = LoggerFactory.getLogger(MergeableClassPathXmlApplicationContextLoader.class);
 
     @Override
-    protected MergeableApplicationContext loadApplicationContext(JigsawPiece piece) {
-        log.info("Creating application context for " + piece.getId());
-
-        MergeableClassPathXmlApplicationContext context = null;
-        if (piece.getProperties().containsKey(SPRING_LOCATION_PROP)) {
-            String locationProperty = piece.getProperties().getProperty(SPRING_LOCATION_PROP);
-            String[] springLocations = locationProperty.split(",");
-
-            log.info("Loading Spring files at " + locationProperty + " for piece " + piece.getId());
-
-            context = new MergeableClassPathXmlApplicationContext();
-            context.setConfigLocations(springLocations);
-            context.setClassLoader(piece.getClassLoader());
+    public MergeableApplicationContext loadApplicationContext(JigsawPiece piece) {
+        String[] springLocations = getSpringFileLocations(piece);
+        if (springLocations == null || springLocations.length == 0) {
+            return null;
         }
 
-        return context;
-    }
+        log.info("Found Spring files at " + Arrays.toString(springLocations));
 
-    @Override
-    public boolean canSupport(Jigsaw jigsaw, JigsawPiece piece) {
-        return piece.getProperties().containsKey(SPRING_LOCATION_PROP);
+        MergeableClassPathXmlApplicationContext context = new MergeableClassPathXmlApplicationContext();
+        context.setConfigLocations(springLocations);
+        context.setClassLoader(piece.getClassLoader());
+
+        return context;
     }
 }

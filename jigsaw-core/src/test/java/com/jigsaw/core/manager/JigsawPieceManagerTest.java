@@ -52,7 +52,7 @@ public class JigsawPieceManagerTest {
             pieceManager.removePiece(pieceManager.getPiece(testId));
         }
 
-        JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT");
+        JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT", "jar");
 
         Assert.assertTrue(piece.getDependencies().contains(testDependencyId));
         Assert.assertNotNull(piece.getClassLoader());
@@ -68,7 +68,7 @@ public class JigsawPieceManagerTest {
             pieceManager.removePiece(pieceManager.getPiece(testId));
         }
 
-        JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT");
+        JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT", "jar");
         JigsawPiece dependency = pieceManager.getPiece(testDependencyId);
 
         Set<JigsawPiece> pieces = pieceManager.connectPiece(piece);

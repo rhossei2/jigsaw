@@ -3,6 +3,7 @@
     "groupId" : "com.jigsaw",
     "artifactId" : "jigsaw-test",
     "version" : "1.0.0-SNAPSHOT",
-    "status" : "CONNECTED"
+    "status" : "CONNECTED",
+    "extension" : "jar"
   }
 ]

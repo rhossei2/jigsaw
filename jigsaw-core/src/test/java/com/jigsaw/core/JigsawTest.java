@@ -67,7 +67,7 @@ public class JigsawTest {
 
     @Test
     public void testReassemble() throws Exception {
-        jigsaw.reassemble(testId, "com.jigsaw", "jigsaw-test", "1.0.1-SNAPSHOT");
+        jigsaw.reassemble(testId, "com.jigsaw", "jigsaw-test", "1.0.1-SNAPSHOT", "jar");
 
         Assert.assertFalse(pieceManager.hasPiece(testId));
         Assert.assertFalse(pieceManager.hasPiece(testDependencyId));

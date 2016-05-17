@@ -302,15 +302,16 @@ public class JigsawPieceManager {
      * @param groupId    group id
      * @param artifactId artifact id
      * @param version    version
+     * @param extension extension (ex. jar, war)
      * @return the added piece
      */
-    public JigsawPiece addPiece(String groupId, String artifactId, String version) {
+    public JigsawPiece addPiece(String groupId, String artifactId, String version, String extension) {
         try {
             RepositorySystem repoSystem = newRepositorySystem();
 
             RepositorySystemSession session = newSession(repoSystem);
 
-            Dependency dependency = new Dependency(new DefaultArtifact(groupId, artifactId, "jar", version), "compile");
+            Dependency dependency = new Dependency(new DefaultArtifact(groupId, artifactId, extension, version), "compile");
 
             RemoteRepository central = new RemoteRepository.Builder("central", "default", "http://repo1.maven.org/maven2/").build();
 

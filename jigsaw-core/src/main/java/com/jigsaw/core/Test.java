@@ -14,9 +14,9 @@ public class Test {
         Jigsaw jigsaw = builder.create();
         jigsaw.getPieceManager().setLocalRepository("C:/Users/rhosseini/.m2/repository");
 
-        JigsawPiece piece = jigsaw.assemble("com.jigsaw", "jigsaw-spring", "1.0.0-SNAPSHOT");
+        JigsawPiece piece = jigsaw.assemble("com.jigsaw", "jigsaw-spring", "1.0.0-SNAPSHOT", "jar");
 
-        jigsaw.assemble("com.healthways", "moai-jar", "1.0.0-SNAPSHOT");
+        jigsaw.assemble("com.healthways", "moai-war", "1.0-SNAPSHOT", "war");
         //jigsaw.assemble("com.healthways.module", "com-healthways-service-dao", "1.3.4-SNAPSHOT");
     }
 }

@@ -44,7 +44,7 @@ public class ClassLoaderManagerTest {
 
     @Test
     public void testAddClassLoader() throws Exception {
-        JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT");
+        JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT", "jar");
 
         ClassLoaderManager.JigsawClassLoader classLoader = (ClassLoaderManager.JigsawClassLoader) pieceManager.getClassLoaderManager()
                 .getClassLoader("com/jigsawtestdependency/Printer.class", piece);
@@ -60,7 +60,7 @@ public class ClassLoaderManagerTest {
 
     @Test
     public void testRemoveClassLoader() throws Exception {
-        JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT");
+        JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT", "jar");
 
         pieceManager.connectPiece(piece);
 
@@ -76,7 +76,7 @@ public class ClassLoaderManagerTest {
 
     @Test
     public void testGetClassLoader() throws Exception {
-        JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT");
+        JigsawPiece piece = pieceManager.addPiece("com.jigsaw", "jigsaw-test", "1.0.0-SNAPSHOT", "jar");
 
         ClassLoaderManager.JigsawClassLoader classLoader = (ClassLoaderManager.JigsawClassLoader) pieceManager.getClassLoaderManager()
                 .getClassLoader("com/jigsawtestdependency/Printer.class", piece);

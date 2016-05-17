@@ -14,6 +14,8 @@ public class SimpleJigsawPiece {
 
     private String version;
 
+    private String extension;
+
     private JigsawPieceStatus status;
 
     public String getId() {
@@ -71,7 +73,16 @@ public class SimpleJigsawPiece {
         return id.hashCode();
     }
 
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
+    }
+
     public String toString() {
         return "SimpleJigsawPiece{id='" + id + '\'' + ", groupId='" + groupId + '\'' + ", artifactId='" + artifactId + '\'' + ", version='" + version + '\'' + ", status='" + status + '\'' + '}';
     }
+
 }

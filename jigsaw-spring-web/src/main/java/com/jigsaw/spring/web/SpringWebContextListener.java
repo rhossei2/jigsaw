@@ -9,11 +9,11 @@ import org.slf4j.LoggerFactory;
  * @author Ramtin Hosseini
  * @date 4/20/2016
  */
-public class SpringContextListener extends JigsawListener {
+public class SpringWebContextListener extends JigsawListener {
 
     private static final String SPRING_LOCATION_PROP = "jigsaw.spring.location";
 
-    private static final Logger log = LoggerFactory.getLogger(SpringContextListener.class);
+    private static final Logger log = LoggerFactory.getLogger(SpringWebContextListener.class);
 
     @Override
     public void assembled(JigsawPiece piece) {

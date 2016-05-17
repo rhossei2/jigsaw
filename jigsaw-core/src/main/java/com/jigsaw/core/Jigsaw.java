@@ -27,7 +27,7 @@ public class Jigsaw {
         List<SimpleJigsawPiece> dbPieces = pieceManager.getPersistedPieces();
         for (SimpleJigsawPiece dbPiece : dbPieces) {
             JigsawPiece piece = pieceManager
-                    .addPiece(dbPiece.getGroupId(), dbPiece.getArtifactId(), dbPiece.getVersion());
+                    .addPiece(dbPiece.getGroupId(), dbPiece.getArtifactId(), dbPiece.getVersion(), dbPiece.getExtension());
 
             if (dbPiece.getStatus() == JigsawPieceStatus.CONNECTED) {
                 pieceManager.connectPiece(piece);
@@ -69,8 +69,8 @@ public class Jigsaw {
      * @param version piece version
      * @return the newly assembled piece
      */
-    public JigsawPiece assemble(String groupId, String artifactId, String version) {
-        JigsawPiece piece = pieceManager.addPiece(groupId, artifactId, version);
+    public JigsawPiece assemble(String groupId, String artifactId, String version, String extension) {
+        JigsawPiece piece = pieceManager.addPiece(groupId, artifactId, version, extension);
 
         pieceManager.connectPiece(piece);
 
@@ -87,7 +87,7 @@ public class Jigsaw {
      * @param version the new version
      * @return the newly assembled piece
      */
-    public JigsawPiece reassemble(String pieceId, String groupId, String artifactId, String version) {
+    public JigsawPiece reassemble(String pieceId, String groupId, String artifactId, String version, String extension) {
         JigsawPiece oldPiece = pieceManager.getPiece(pieceId);
         if (oldPiece != null) {
             pieceManager.disconnectPiece(oldPiece);
@@ -97,7 +97,7 @@ public class Jigsaw {
             pieceManager.removePiece(oldPiece);
         }
 
-        JigsawPiece newPiece = pieceManager.addPiece(groupId, artifactId, version);
+        JigsawPiece newPiece = pieceManager.addPiece(groupId, artifactId, version, extension);
 
         pieceManager.connectPiece(newPiece);
 
