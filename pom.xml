@@ -30,7 +30,8 @@
     <modules>
         <module>jigsaw-core</module>
 		<module>jigsaw-spring</module>
-		<module>jigsaw-spring-web</module>
+		<module>jigsaw-web-spring</module>
+		<module>jigsaw-web-tomcat</module>
     </modules>
 
 </project>
