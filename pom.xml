@@ -32,6 +32,7 @@
 		<module>jigsaw-spring</module>
 		<module>jigsaw-web-spring</module>
 		<module>jigsaw-web-tomcat</module>
+		<module>jigsaw-web-console</module>
     </modules>
 
 </project>

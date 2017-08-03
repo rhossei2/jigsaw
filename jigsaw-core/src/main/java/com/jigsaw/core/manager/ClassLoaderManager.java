@@ -164,18 +164,28 @@ public class ClassLoaderManager {
         }
 
         @Override
+        /**
+         * Loads a class
+         * 1. Check whether class has originated from the given piece
+         * 2. Check whether the class is available in the container
+         */
         protected Class<?> loadClass(String className, boolean resolve) throws ClassNotFoundException {
+            String resourceName = JarUtils.getResourceName(className);
+
             try {
-                return super.loadClass(className, resolve);
-
-            } catch (ClassNotFoundException e) {
-                String resourceName = JarUtils.getResourceName(className);
-
                 ClassLoader classLoader = getClassLoader(resourceName, jigsawPiece);
                 if (classLoader == null) {
-                    throw new ClassNotFoundException(className + " is not available to " + jigsawPiece.getId());
+                    return super.loadClass(className, resolve);
                 }
 
+                if (classLoader instanceof JigsawClassLoader) {
+                    if (((JigsawClassLoader) classLoader).getJigsawPiece().getId().equals(jigsawPiece.getId())) {
+                        //load from this classloader since class originated from here
+                        return super.loadClass(className, resolve);
+                    }
+                }
+
+                //load from the container
                 Class clazz = classLoader.loadClass(className);
 
                 if (resolve) {
@@ -183,6 +193,9 @@ public class ClassLoaderManager {
                 }
 
                 return clazz;
+
+            } catch (ClassNotFoundException e) {
+                throw new ClassNotFoundException(className + " is not available to " + jigsawPiece.getId());
             }
         }
 

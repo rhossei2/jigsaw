@@ -2,6 +2,7 @@ package com.jigsaw.web.spring;
 
 import com.jigsaw.core.Jigsaw;
 import com.jigsaw.core.model.JigsawPiece;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
@@ -18,6 +19,8 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 
     private Jigsaw jigsaw;
 
+    private MergeableXmlWebApplicationContextLoader applicationContextLoader;
+
     public SpringServletContainerInitializer(Jigsaw jigsaw, JigsawPiece piece) {
         this.jigsaw = jigsaw;
         this.piece = piece;
@@ -29,6 +32,17 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
                         ApplicationContextManagerFactory.getInstance(),
                         servletContext);
 
-        manager.addApplicationContext(jigsaw, piece);*/
+        manager.addApplicationContext(jigsaw, piece);
+
+        ApplicationContextManagerFactory.getInstance().getContexts().get(piece.getId());
+
+        context.setServletContext(servletContext);
+        context.setClassLoader(this.getClass().getClassLoader());
+        context.refresh();*/
+
+        applicationContextLoader = new MergeableXmlWebApplicationContextLoader(servletContext);
+
+        ApplicationContextManagerFactory.getInstance()
+                .addApplicationContext(jigsaw, piece, applicationContextLoader);
     }
 }

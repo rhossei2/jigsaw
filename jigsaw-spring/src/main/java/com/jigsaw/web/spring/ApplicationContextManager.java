@@ -21,16 +21,26 @@ public class ApplicationContextManager {
     private Set<AbstractApplicationContextLoader> applicationContextLoaders = new HashSet<>();
 
     public MergeableApplicationContext addApplicationContext(Jigsaw jigsaw, JigsawPiece piece) {
+        for (AbstractApplicationContextLoader contextLoader : applicationContextLoaders) {
+            MergeableApplicationContext context = addApplicationContext(jigsaw, piece, contextLoader);
+            if (context != null) {
+                return context;
+            }
+        }
+
+        return null;
+    }
+
+    public MergeableApplicationContext addApplicationContext(Jigsaw jigsaw, JigsawPiece piece,
+                                                             AbstractApplicationContextLoader contextLoader) {
         if (contexts.containsKey(piece.getId())) {
             return contexts.get(piece.getId());
         }
 
         MergeableApplicationContext context = null;
         if (piece.getStatus() == JigsawPieceStatus.CONNECTED) {
-            for (AbstractApplicationContextLoader contextLoader : applicationContextLoaders) {
-                if (contextLoader.canSupport(jigsaw, piece)) {
-                    context = contextLoader.loadApplicationContext(jigsaw, piece);
-                }
+            if (contextLoader.canSupport(jigsaw, piece)) {
+                context = contextLoader.loadApplicationContext(jigsaw, piece);
             }
         }
 

@@ -17,12 +17,18 @@ public class SpringWebContextListener extends JigsawListener {
 
     @Override
     public void assembled(JigsawPiece piece) {
+        ApplicationContextManager springManager =
+                ApplicationContextManagerFactory.getInstance();
 
+        springManager.addApplicationContext(getJigsaw(), piece);
     }
 
     @Override
     public void disassembled(JigsawPiece piece) {
+        ApplicationContextManager springManager =
+                ApplicationContextManagerFactory.getInstance();
 
+        springManager.removeApplicationContext(getJigsaw(), piece);
     }
 
     @Override

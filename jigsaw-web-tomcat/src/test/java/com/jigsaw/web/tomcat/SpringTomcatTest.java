@@ -4,6 +4,7 @@ import com.jigsaw.web.spring.MergeableClassPathXmlApplicationContext;
 import com.jigsaw.web.spring.MergeableXmlWebApplicationContext;
 import com.jigsaw.web.tomcat.JigsawTomcat;
 import org.apache.catalina.Context;
+import org.apache.catalina.LifecycleException;
 import org.apache.catalina.core.StandardContext;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -43,13 +44,14 @@ public class SpringTomcatTest {
 
         tomcat.start();
 
-        Context testCtx = tomcat.getWebappContext("/context", getClass().getResource("/webapp").getFile());
-        testCtx.addServletContainerInitializer(new SpringServletContainerInitializerMock(mainContext), null);
+        String webappPath = getClass().getResource("/webapp").getFile();
 
-        tomcat.addContext(tomcat.getHost(), testCtx);
+        Context testCtx1 = tomcat.getWebappContext("/context", new File(webappPath).getAbsolutePath());
+        testCtx1.addServletContainerInitializer(new SpringServletContainerInitializerMock(mainContext), null);
 
-        tomcat.getServer().await();
+        tomcat.addContext(tomcat.getHost(), testCtx1);
 
         //testCtx.stop();
+        tomcat.getServer().await();
     }
 }

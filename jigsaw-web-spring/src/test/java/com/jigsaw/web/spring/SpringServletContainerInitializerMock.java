@@ -27,8 +27,5 @@ public class SpringServletContainerInitializerMock implements ServletContainerIn
         context.setServletContext(servletContext);
         context.setClassLoader(this.getClass().getClassLoader());
         context.refresh();
-
-        //set the context as an attribute so Spring servletDispatcher can reference it
-        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, context);
     }
 }
